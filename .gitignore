@@ -1,0 +1,12 @@
+﻿# Virtual environments & Python cache
+**/venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node modules & build
+**/node_modules/
+**/dist/
+
+# Sensitive environment files
+**/.env
