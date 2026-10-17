@@ -314,7 +314,7 @@ export default function RepositoryActivityPage() {
             <Clock className="w-10 h-10 text-[#8e8a8a] mx-auto opacity-40" />
             <h3 className="text-base font-semibold text-white">No Change Events Recorded Yet</h3>
             <p className="text-xs text-[#a09e9e] max-w-lg mx-auto">
-              When commits are pushed to your GitHub repositories, CareerProof AI automatically detects the change,
+              When commits are pushed to your GitHub repositories, Parivartan AI automatically detects the change,
               inspects updated source files, reconciles your verified skills, and reassesses any saved job matches.
             </p>
           </div>

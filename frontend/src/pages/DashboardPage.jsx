@@ -101,7 +101,7 @@ export default function DashboardPage() {
           </h1>
 
           <p className="text-sm text-[#a8a3a3] leading-relaxed max-w-2xl">
-            CareerProof AI compares your GitHub portfolio evidence with real job requirements
+            Parivartan AI compares your GitHub portfolio evidence with real job requirements
             to deliver objective, evidence-based career coaching. Complete the checklist below
             to run your first assessment.
           </p>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-base font-semibold text-white mb-1">Repository Monitoring &amp; Automatic Reassessment</h2>
             <p className="text-sm text-[#a8a3a3] leading-relaxed">
-              CareerProof AI continuously monitors your connected GitHub repositories. When you push new commits,
+              Parivartan AI continuously monitors your connected GitHub repositories. When you push new commits,
               your verified skills and job match scores update automatically.
             </p>
             <Link

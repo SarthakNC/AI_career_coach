@@ -13,7 +13,7 @@ def get_github_headers() -> Dict[str, str]:
     """Prepares headers for GitHub API, dynamically injecting GITHUB_TOKEN if configured."""
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "CareerProof-AI/1.0",
+        "User-Agent": "Parivartan-AI/1.0",
     }
     token = get_current_github_token()
     if token:

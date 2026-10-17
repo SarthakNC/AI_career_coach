@@ -108,7 +108,7 @@ export default function SignupPage() {
               </div>
             </div>
             <span className="text-xl font-bold text-white">
-              CareerProof <span className="text-[#FF8900]">AI</span>
+              Parivartan <span className="text-[#FF8900]">AI</span>
             </span>
           </Link>
           <h1 className="text-2xl font-bold text-white mt-2">Create your account</h1>

@@ -1,5 +1,5 @@
 """
-CareerProof AI — Phase 8: Automatic GitHub Change Detection & AI Career Reassessment
+Parivartan AI — Phase 8: Automatic GitHub Change Detection & AI Career Reassessment
 Background Worker Daemon & Scheduled Poller
 
 Usage:
@@ -245,7 +245,7 @@ def run_monitoring_cycle() -> int:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CareerProof AI — Automatic GitHub Change Detector Worker")
+    parser = argparse.ArgumentParser(description="Parivartan AI — Automatic GitHub Change Detector Worker")
     parser.add_argument("--once", action="store_true", help="Run a single polling cycle and exit.")
     parser.add_argument("--daemon", action="store_true", help="Run continuously in a loop.")
     parser.add_argument("--interval", type=int, default=None, help="Polling interval in seconds (default from config or 60).")
@@ -260,7 +260,7 @@ def main():
     interval = args.interval or settings.github_poll_interval_seconds or 60
 
     logger.info(
-        "CareerProof AI Change Detector Worker started (Interval: %ds, Monitoring: %s)",
+        "Parivartan AI Change Detector Worker started (Interval: %ds, Monitoring: %s)",
         interval,
         settings.github_monitoring_enabled,
     )

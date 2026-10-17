@@ -46,7 +46,7 @@ export default function Dashboard() {
         setSystemStatus(fallbackStatus)
       } catch {
         setSystemStatus({
-          app_name: 'CareerProof AI API',
+          app_name: 'Parivartan AI API',
           version: '1.0.0',
           environment: 'development',
           database: {

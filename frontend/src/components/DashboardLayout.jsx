@@ -63,7 +63,7 @@ export default function DashboardLayout() {
             </div>
           </div>
           <span className="text-base font-bold text-white">
-            CareerProof <span className="text-[#FF8900]">AI</span>
+            Parivartan <span className="text-[#FF8900]">AI</span>
           </span>
         </div>
 
@@ -101,7 +101,7 @@ export default function DashboardLayout() {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#FF8900]" />
                 <span className="text-base font-bold text-white">
-                  CareerProof <span className="text-[#FF8900]">AI</span>
+                  Parivartan <span className="text-[#FF8900]">AI</span>
                 </span>
               </div>
               <button
