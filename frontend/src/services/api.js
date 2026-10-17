@@ -374,4 +374,124 @@ export async function getPortfolioSummary(token) {
   return await response.json()
 }
 
+/**
+ * ─────────────────────────────────────────────────────────────
+ * Phase 7: AI-Powered Skill-Gap Assessment API
+ * ─────────────────────────────────────────────────────────────
+ */
+
+export async function getAssessmentOptions(token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/assessments/options`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to fetch assessment options'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function createAssessment({ jobId, repositoryIds }, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/assessments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      job_id: jobId,
+      repository_ids: repositoryIds,
+    }),
+  })
+
+  if (!response.ok) {
+    let err = 'Assessment generation failed'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function listAssessments(token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/assessments`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to fetch assessments'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function getAssessmentById(assessmentId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/assessments/${assessmentId}`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to retrieve assessment details'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function deleteAssessment(assessmentId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/assessments/${assessmentId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok && response.status !== 204) {
+    let err = 'Failed to delete assessment'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+}
+
 export { API_BASE_URL }
+
