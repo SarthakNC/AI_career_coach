@@ -90,10 +90,6 @@ export default function JobAnalysisPage() {
       // Step: Validating
       await new Promise((r) => setTimeout(r, 400))
 
-      if (formData.job_url && !formData.pasted_description) {
-        setStage(STAGES.RETRIEVING)
-      }
-
       setStage(STAGES.ANALYZING)
       const result = await analyzeJob(formData, token)
 

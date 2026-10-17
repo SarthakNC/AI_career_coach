@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { Globe, FileText, Sparkles, AlertCircle, Loader2 } from 'lucide-react'
+import { FileText, Sparkles, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function JobAnalysisForm({ onSubmit, isAnalyzing, currentStage }) {
-  const [inputMode, setInputMode] = useState('url') // 'url' | 'paste'
-  const [jobUrl, setJobUrl] = useState('')
   const [pastedDescription, setPastedDescription] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [companyName, setCompanyName] = useState('')
@@ -13,31 +11,13 @@ export default function JobAnalysisForm({ onSubmit, isAnalyzing, currentStage })
     e.preventDefault()
     setValidationError('')
 
-    if (inputMode === 'url') {
-      if (!jobUrl || !jobUrl.trim()) {
-        setValidationError('Please enter a public job posting URL.')
-        return
-      }
-      try {
-        const parsed = new URL(jobUrl.trim())
-        if (!['http:', 'https:'].includes(parsed.protocol)) {
-          setValidationError('Please enter a valid HTTP or HTTPS URL.')
-          return
-        }
-      } catch {
-        setValidationError('Invalid URL format. Please include http:// or https://.')
-        return
-      }
-    } else {
-      if (!pastedDescription || pastedDescription.trim().length < 50) {
-        setValidationError('Please paste sufficient job description text (minimum 50 characters).')
-        return
-      }
+    if (!pastedDescription || pastedDescription.trim().length < 50) {
+      setValidationError('Please paste sufficient job description text (minimum 50 characters).')
+      return
     }
 
     onSubmit({
-      job_url: jobUrl.trim() || null,
-      pasted_description: pastedDescription.trim() || null,
+      pasted_description: pastedDescription.trim(),
       job_title: jobTitle.trim() || null,
       company_name: companyName.trim() || null,
     })
@@ -45,46 +25,14 @@ export default function JobAnalysisForm({ onSubmit, isAnalyzing, currentStage })
 
   return (
     <div className="bg-[#1a1919] border border-[#353333] rounded-2xl p-6 shadow-xl">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2 m-0">
-            <Sparkles className="w-5 h-5 text-[#FF8900]" />
-            Analyze Job Requirements
-          </h2>
-          <p className="text-sm text-[#b0abab] mt-1 m-0">
-            Submit a public job posting URL or paste the job description to extract structured technical requirements.
-          </p>
-        </div>
-
-        {/* Input Mode Selector */}
-        <div className="inline-flex rounded-xl bg-[#2a2929] p-1 border border-[#3a3838]">
-          <button
-            type="button"
-            disabled={isAnalyzing}
-            onClick={() => { setInputMode('url'); setValidationError('') }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none ${
-              inputMode === 'url'
-                ? 'bg-[#FF8900] text-white shadow'
-                : 'text-[#b0abab] hover:text-white bg-transparent'
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5" />
-            Posting URL
-          </button>
-          <button
-            type="button"
-            disabled={isAnalyzing}
-            onClick={() => { setInputMode('paste'); setValidationError('') }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border-none ${
-              inputMode === 'paste'
-                ? 'bg-[#FF8900] text-white shadow'
-                : 'text-[#b0abab] hover:text-white bg-transparent'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            Paste Text
-          </button>
-        </div>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2 m-0">
+          <Sparkles className="w-5 h-5 text-[#FF8900]" />
+          Analyze Job Requirements
+        </h2>
+        <p className="text-sm text-[#b0abab] mt-1 m-0">
+          Paste the job description below to extract structured technical requirements.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -118,46 +66,24 @@ export default function JobAnalysisForm({ onSubmit, isAnalyzing, currentStage })
           </div>
         </div>
 
-        {/* Dynamic Input: URL vs Pasted Description */}
-        {inputMode === 'url' ? (
-          <div>
-            <label className="block text-xs font-medium text-[#d4cfcf] mb-1">
-              Public Job Posting URL <span className="text-rose-400">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="url"
-                disabled={isAnalyzing}
-                value={jobUrl}
-                onChange={(e) => setJobUrl(e.target.value)}
-                placeholder="https://boards.greenhouse.io/company/jobs/12345"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#232222] border border-[#3a3838] text-white text-sm placeholder-[#666] focus:outline-none focus:border-[#FF8900] transition-colors"
-              />
-              <Globe className="w-4 h-4 text-[#888] absolute left-3.5 top-3" />
-            </div>
-            <p className="text-[11px] text-[#888] mt-1.5 m-0">
-              Note: If the site blocks automated retrieval (login required, Cloudflare/CAPTCHA), switch to "Paste Text".
-            </p>
+        {/* Job Description Textarea */}
+        <div>
+          <label className="block text-xs font-medium text-[#d4cfcf] mb-1">
+            Job Description <span className="text-rose-400">*</span>
+          </label>
+          <textarea
+            rows={8}
+            disabled={isAnalyzing}
+            value={pastedDescription}
+            onChange={(e) => setPastedDescription(e.target.value)}
+            placeholder="Paste the complete responsibilities, qualifications, and requirements from the job posting..."
+            className="w-full p-3.5 rounded-xl bg-[#232222] border border-[#3a3838] text-white text-sm placeholder-[#666] focus:outline-none focus:border-[#FF8900] transition-colors resize-y"
+          />
+          <div className="flex items-center justify-between text-[11px] text-[#888] mt-1">
+            <span>Authoritative text source for extraction</span>
+            <span>{pastedDescription.length} characters (min 50)</span>
           </div>
-        ) : (
-          <div>
-            <label className="block text-xs font-medium text-[#d4cfcf] mb-1">
-              Paste Full Job Description <span className="text-rose-400">*</span>
-            </label>
-            <textarea
-              rows={7}
-              disabled={isAnalyzing}
-              value={pastedDescription}
-              onChange={(e) => setPastedDescription(e.target.value)}
-              placeholder="Paste the complete responsibilities, qualifications, and requirements from the job posting..."
-              className="w-full p-3.5 rounded-xl bg-[#232222] border border-[#3a3838] text-white text-sm placeholder-[#666] focus:outline-none focus:border-[#FF8900] transition-colors resize-y"
-            />
-            <div className="flex items-center justify-between text-[11px] text-[#888] mt-1">
-              <span>Authoritative text source for extraction</span>
-              <span>{pastedDescription.length} characters</span>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* Validation Error Message */}
         {validationError && (

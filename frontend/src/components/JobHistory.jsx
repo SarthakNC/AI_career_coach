@@ -33,7 +33,7 @@ export default function JobHistory({ jobs, activeJobId, onSelectJob, onDeleteJob
         </div>
         <h3 className="text-sm font-semibold text-white m-0 mb-1">No Saved Analyses Yet</h3>
         <p className="text-xs text-[#888] m-0 max-w-xs mx-auto">
-          Analyze a job posting URL or paste a description to build your requirement history.
+          Paste a job description to extract requirements and build your requirement history.
         </p>
       </div>
     )
