@@ -74,6 +74,82 @@ export async function getSystemStatus() {
 }
 
 /**
+ * Upload and extract job description text from a digital or scanned PDF.
+ * @param {File} file PDF file object
+ * @param {string} token Supabase access token
+ * @returns {Promise<{success: boolean, extracted_text: string, page_count: number, extraction_method: string, ocr_pages: number[], warnings: string[], detected_job_title?: string, detected_company_name?: string}>}
+ */
+export async function extractPdfJobDescription(file, token) {
+  if (!token) {
+    throw new Error('Authentication required. Please log in.')
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/jobs/extract-pdf`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  })
+
+  if (!response.ok) {
+    let errorDetail = `PDF extraction failed with HTTP ${response.status}`
+    try {
+      const errJson = await response.json()
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail)
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
+  }
+
+  return await response.json()
+}
+
+/**
+ * Submit user-confirmed extracted job description text for requirement analysis.
+ * @param {Object} payload { extracted_text, job_title, company_name }
+ * @param {string} token Supabase access token
+ * @returns {Promise<Object>} Saved job analysis record
+ */
+export async function analyzeExtractedText(payload, token) {
+  if (!token) {
+    throw new Error('Authentication required. Please log in.')
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/jobs/analyze-extracted-text`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    let errorDetail = `Requirement analysis failed with HTTP ${response.status}`
+    try {
+      const errJson = await response.json()
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail)
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
+  }
+
+  return await response.json()
+}
+
+/**
  * Analyze a job posting URL or pasted description.
  * @param {Object} payload { job_url, pasted_description, job_title, company_name }
  * @param {string} token Supabase access token
