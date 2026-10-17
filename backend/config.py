@@ -66,10 +66,15 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> List[str]:
-        """Parse comma-delimited origins or return default local Vite URL."""
+        """Parse comma-delimited origins or return default local Vite URLs."""
+        defaults = ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"]
         if not self.allowed_origins:
-            return ["http://localhost:5173"]
-        return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
+            return defaults
+        configured = [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
+        for d in defaults:
+            if d not in configured:
+                configured.append(d)
+        return configured
 
     @property
     def pdf_max_upload_size_bytes(self) -> int:
