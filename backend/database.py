@@ -79,9 +79,9 @@ def check_database_connection() -> Dict[str, Any]:
 
         # Lightweight check using Supabase PostgREST root endpoint.
         # This executes a real PostgreSQL connection handshake and schema verification.
-        rest_url = f"{client.supabase_url.rstrip('/')}/rest/v1/"
+        rest_url = f"{str(client.supabase_url).rstrip('/')}/rest/v1/"
         headers = {
-            "apikey": client.supabase_key,
+            "apikey": str(client.supabase_key),
             "Authorization": f"Bearer {client.supabase_key}",
         }
 

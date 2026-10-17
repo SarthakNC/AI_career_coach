@@ -73,4 +73,305 @@ export async function getSystemStatus() {
   }
 }
 
+/**
+ * Analyze a job posting URL or pasted description.
+ * @param {Object} payload { job_url, pasted_description, job_title, company_name }
+ * @param {string} token Supabase access token
+ * @returns {Promise<Object>} Saved job analysis record
+ */
+export async function analyzeJob(payload, token) {
+  if (!token) {
+    throw new Error('Authentication required. Please log in.')
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/jobs/analyze`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    let errorDetail = `Analysis failed with HTTP ${response.status}`
+    try {
+      const errJson = await response.json()
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail)
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
+  }
+
+  return await response.json()
+}
+
+/**
+ * List all saved job analyses for current authenticated user.
+ * @param {string} token Supabase access token
+ * @returns {Promise<Array>} List of job summaries
+ */
+export async function listSavedJobs(token) {
+  if (!token) {
+    throw new Error('Authentication required. Please log in.')
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/jobs`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let errorDetail = `Failed to fetch jobs (HTTP ${response.status})`
+    try {
+      const errJson = await response.json()
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail)
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
+  }
+
+  return await response.json()
+}
+
+/**
+ * Get details for a single job analysis including requirements.
+ * @param {string} jobId UUID
+ * @param {string} token Supabase access token
+ * @returns {Promise<Object>} Job details with requirements
+ */
+export async function getJobDetails(jobId, token) {
+  if (!token) {
+    throw new Error('Authentication required. Please log in.')
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let errorDetail = `Failed to load job details (HTTP ${response.status})`
+    try {
+      const errJson = await response.json()
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail)
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
+  }
+
+  return await response.json()
+}
+
+/**
+ * Delete a saved job analysis.
+ * @param {string} jobId UUID
+ * @param {string} token Supabase access token
+ * @returns {Promise<void>}
+ */
+export async function deleteSavedJob(jobId, token) {
+  if (!token) {
+    throw new Error('Authentication required. Please log in.')
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok && response.status !== 204) {
+    let errorDetail = `Failed to delete job (HTTP ${response.status})`
+    try {
+      const errJson = await response.json()
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail)
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail)
+  }
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────
+ * GitHub Portfolio API Client
+ * ─────────────────────────────────────────────────────────────
+ */
+
+export async function resolveGitHub(query, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/repositories/resolve`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ query }),
+  })
+
+  if (!response.ok) {
+    let err = `Failed to resolve GitHub identifier (HTTP ${response.status})`
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function listUserRepositories(token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/repositories`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to load portfolio repositories'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function addRepositoryToPortfolio(repoData, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/repositories`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(repoData),
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to add repository'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function analyzeRepository(repoId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/repositories/${repoId}/analyze`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Analysis failed'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function getRepositoryAnalysis(repoId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/repositories/${repoId}/analysis`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    if (response.status === 404) return null
+    let err = 'Failed to fetch analysis'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+export async function deleteUserRepository(repoId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/repositories/${repoId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok && response.status !== 204) {
+    let err = 'Failed to delete repository'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+}
+
+export async function getPortfolioSummary(token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/portfolio-summary`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    return {
+      total_repositories: 0,
+      analyzed_repositories: 0,
+      total_skills_detected: 0,
+      latest_analyzed_at: null,
+    }
+  }
+  return await response.json()
+}
+
 export { API_BASE_URL }

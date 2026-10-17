@@ -9,6 +9,8 @@ import LandingPage from './pages/LandingPage'
 import SignupPage from './pages/SignupPage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
+import JobAnalysisPage from './pages/JobAnalysisPage'
+import GitHubPortfolioPage from './pages/GitHubPortfolioPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -32,8 +34,8 @@ export default function App() {
             }
           >
             <Route index element={<DashboardPage />} />
-            <Route path="jobs" element={<ComingSoonPage />} />
-            <Route path="github" element={<ComingSoonPage />} />
+            <Route path="jobs" element={<JobAnalysisPage />} />
+            <Route path="github" element={<GitHubPortfolioPage />} />
             <Route path="skills" element={<ComingSoonPage />} />
             <Route path="history" element={<ComingSoonPage />} />
             <Route path="settings" element={<ComingSoonPage />} />

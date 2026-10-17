@@ -2,13 +2,15 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 from database import check_database_connection
+from routes.jobs import router as jobs_router
+from routes.github import router as github_router
 
 settings = get_settings()
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Evidence-based AI Career Coach API — Phase 1 Foundation",
+    description="Evidence-based AI Career Coach API — Integrating Job Requirement Analysis & GitHub Portfolio Evidence",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -21,6 +23,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include Routers
+app.include_router(jobs_router)
+app.include_router(github_router)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK, tags=["Health"])
