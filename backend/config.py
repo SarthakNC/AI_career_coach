@@ -38,6 +38,19 @@ class Settings(BaseSettings):
     # CORS configuration
     allowed_origins: str = Field(default="http://localhost:5173", alias="ALLOWED_ORIGINS")
 
+    # ChromaDB & RAG Configuration
+    chroma_db_dir: str = Field(default="data/chroma_db", alias="CHROMA_DB_DIR")
+    rag_top_k: int = Field(default=4, alias="RAG_TOP_K")
+    rag_distance_threshold: float = Field(default=0.85, alias="RAG_DISTANCE_THRESHOLD")
+
+    # PDF Processing & OCR Configuration
+    pdf_max_upload_size_mb: int = Field(default=10, alias="PDF_MAX_UPLOAD_SIZE_MB")
+    pdf_max_page_count: int = Field(default=30, alias="PDF_MAX_PAGE_COUNT")
+    ocr_language: str = Field(default="eng", alias="OCR_LANGUAGE")
+    ocr_tesseract_cmd: Optional[str] = Field(default=None, alias="OCR_TESSERACT_CMD")
+    ocr_timeout_seconds: int = Field(default=30, alias="OCR_TIMEOUT_SECONDS")
+    pdf_min_page_text_chars: int = Field(default=80, alias="PDF_MIN_PAGE_TEXT_CHARS")
+
     model_config = SettingsConfigDict(
         env_file=str(ENV_PATH) if ENV_PATH.exists() else None,
         env_file_encoding="utf-8",
@@ -45,11 +58,23 @@ class Settings(BaseSettings):
     )
 
     @property
+    def chroma_db_path(self) -> Path:
+        """Resolve persistent ChromaDB storage directory."""
+        path = BASE_DIR / self.chroma_db_dir
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
     def cors_origins(self) -> List[str]:
         """Parse comma-delimited origins or return default local Vite URL."""
         if not self.allowed_origins:
             return ["http://localhost:5173"]
         return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
+
+    @property
+    def pdf_max_upload_size_bytes(self) -> int:
+        """Maximum PDF upload size in bytes."""
+        return self.pdf_max_upload_size_mb * 1024 * 1024
 
 
 def get_current_github_token() -> Optional[str]:

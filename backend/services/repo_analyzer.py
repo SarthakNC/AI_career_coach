@@ -519,14 +519,17 @@ Analyzed Files ({len(files_map)} files):
 def analyze_repository_workflow(
     full_name: str,
     commit_sha: str,
-    default_branch: str = "main"
+    default_branch: str = "main",
+    user_id: Optional[Any] = None,
+    repo_id: Optional[Any] = None
 ) -> Tuple[ProjectInsights, List[SkillEvidenceItem], int, int]:
     """
     Complete end-to-end repository file analysis workflow:
     1. Fetches recursive tree from GitHub.
     2. Filters & ranks high-signal files within safety and token limits.
     3. Fetches raw file contents at target commit SHA.
-    4. Evaluates evidence and project architecture insights with LLM.
+    4. Indexes source code chunks into ChromaDB for RAG retrieval if user/repo provided.
+    5. Evaluates evidence and project architecture insights with LLM.
     Returns (project_insights, evidence_items, total_discovered, files_analyzed_count).
     """
     from fastapi import HTTPException, status
@@ -561,6 +564,24 @@ def analyze_repository_workflow(
             detail="Failed to retrieve file contents from GitHub API. Please check repository accessibility or configure GITHUB_TOKEN in backend/.env."
         )
 
+    # Index into ChromaDB if user_id and repo_id are provided
+    if user_id and repo_id:
+        try:
+            from services.rag_vector_service import index_repository_files
+            from uuid import UUID
+            u_uuid = UUID(str(user_id)) if not isinstance(user_id, UUID) else user_id
+            r_uuid = UUID(str(repo_id)) if not isinstance(repo_id, UUID) else repo_id
+            index_repository_files(
+                user_id=u_uuid,
+                repo_id=r_uuid,
+                repo_name=full_name,
+                commit_sha=commit_sha,
+                files_map=files_map
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"RAG indexing warning in analyze_repository_workflow: {e}")
+
     evidence_items, project_insights = analyze_repository_files_with_llm(
         repo_full_name=full_name,
         commit_sha=commit_sha,
@@ -570,3 +591,4 @@ def analyze_repository_workflow(
     )
 
     return project_insights, evidence_items, len(tree), len(files_map)
+

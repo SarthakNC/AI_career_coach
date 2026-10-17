@@ -160,7 +160,21 @@ def analyze_repository(
             detail="Failed to retrieve file contents from GitHub API. Please check repository accessibility or configure GITHUB_TOKEN in backend/.env."
         )
 
-    # 4. Run LLM Analysis & Extract Insights
+    # 4. Index repository files into ChromaDB vector store for RAG
+    try:
+        from services.rag_vector_service import index_repository_files
+        index_repository_files(
+            user_id=current_user.user_id,
+            repo_id=repository_id,
+            repo_name=full_name,
+            commit_sha=commit_sha,
+            files_map=files_map
+        )
+    except Exception as rag_err:
+        import logging
+        logging.getLogger(__name__).warning(f"ChromaDB indexing warning for {full_name}: {rag_err}")
+
+    # 5. Run LLM Analysis & Extract Insights
     evidence_items, project_insights = analyze_repository_files_with_llm(
         repo_full_name=full_name,
         commit_sha=commit_sha,
@@ -169,7 +183,7 @@ def analyze_repository(
         skipped_reasons=skipped_reasons
     )
 
-    # 5. Persist to Supabase
+    # 6. Persist to Supabase
     created_run = create_analysis_run(
         repo_id=repository_id,
         user_id=current_user.user_id,
@@ -183,6 +197,16 @@ def analyze_repository(
     )
 
     return created_run
+
+
+@router.get("/repositories/{repository_id}/rag-status", status_code=status.HTTP_200_OK)
+def get_repository_rag_status(
+    repository_id: UUID,
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Retrieves ChromaDB vector indexing statistics for a repository."""
+    from services.rag_vector_service import get_repository_index_stats
+    return get_repository_index_stats(repository_id)
 
 
 @router.get("/repositories/{repository_id}/analysis", response_model=Optional[AnalysisRunResponse], status_code=status.HTTP_200_OK)
@@ -206,3 +230,4 @@ def get_portfolio_metrics(
 ):
     """Retrieves high-level portfolio metrics: total repos, analyzed repos, skills detected."""
     return get_portfolio_summary(current_user.user_id, current_user.token)
+

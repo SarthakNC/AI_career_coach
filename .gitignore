@@ -1,4 +1,4 @@
-﻿# Virtual environments & Python cache
+# Virtual environments & Python cache
 **/venv/
 **/__pycache__/
 *.pyc
@@ -10,3 +10,7 @@
 
 # Sensitive environment files
 **/.env
+
+# Local ChromaDB Vector Store
+backend/data/
+**/data/chroma_db/

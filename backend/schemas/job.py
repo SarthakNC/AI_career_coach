@@ -121,3 +121,20 @@ class JobListResponse(BaseModel):
     requirement_count: int = 0
 
     model_config = {"from_attributes": True}
+
+
+class PDFExtractionResponse(BaseModel):
+    success: bool = True
+    extracted_text: str = Field(..., description="Full consolidated extracted text in page order")
+    page_count: int = Field(..., description="Total number of pages in the PDF document")
+    extraction_method: Literal["text", "ocr", "mixed"] = Field(..., description="Extraction method used ('text', 'ocr', 'mixed')")
+    ocr_pages: List[int] = Field(default_factory=list, description="1-indexed page numbers that required OCR")
+    warnings: List[str] = Field(default_factory=list, description="Quality or processing notices")
+    detected_job_title: Optional[str] = Field(default=None, description="Optional detected job title")
+    detected_company_name: Optional[str] = Field(default=None, description="Optional detected company name")
+
+
+class AnalyzeExtractedTextRequest(BaseModel):
+    extracted_text: str = Field(..., min_length=50, description="Confirmed extracted job description text (minimum 50 characters)")
+    job_title: Optional[str] = Field(default=None, max_length=200, description="Optional job title")
+    company_name: Optional[str] = Field(default=None, max_length=200, description="Optional company name")
