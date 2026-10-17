@@ -20,7 +20,7 @@ export default function Footer() {
                 </div>
               </div>
               <span className="text-base font-bold text-white">
-                CareerProof <span className="text-[#FF8900]">AI</span>
+                Parivartan <span className="text-[#FF8900]">AI</span>
               </span>
             </div>
             <p className="text-sm text-[#9c9797] leading-relaxed max-w-md">
@@ -53,7 +53,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-[#2e2c2c] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#7d7878]">
-          <p className="m-0">© {currentYear} CareerProof AI — Evidence-based AI Career Coach</p>
+          <p className="m-0">© {currentYear} Parivartan AI — Evidence-based AI Career Coach</p>
           <p className="m-0 text-[#FF8900]">FastAPI + React + Supabase</p>
         </div>
       </div>

@@ -1,5 +1,5 @@
 /**
- * API Service for CareerProof AI
+ * API Service for Parivartan AI
  * Centralized HTTP request handling using Fetch API.
  */
 
@@ -61,7 +61,7 @@ export async function getSystemStatus() {
     return await response.json()
   } catch (error) {
     return {
-      app_name: 'CareerProof AI API',
+      app_name: 'Parivartan AI API',
       version: 'Unknown',
       environment: 'Unknown',
       database: {

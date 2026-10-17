@@ -46,7 +46,7 @@ export default function Navbar() {
             </div>
           </div>
           <span className="text-lg font-bold text-white tracking-tight">
-            CareerProof <span className="text-[#FF8900]">AI</span>
+            Parivartan <span className="text-[#FF8900]">AI</span>
           </span>
         </Link>
 

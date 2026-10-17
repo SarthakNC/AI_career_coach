@@ -403,7 +403,7 @@ def test_assessment_version_history_endpoint():
         mock_history = {
             "assessment_id": str(ASSESSMENT_V1_ID),
             "job_title": "Full Stack Engineer",
-            "company_name": "CareerProof AI",
+            "company_name": "Parivartan AI",
             "current_version": 2,
             "versions": [mock_v1, mock_v2],
         }

@@ -14,7 +14,7 @@ export default function Header({ apiBaseUrl }) {
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white m-0">
-                CareerProof <span className="text-[#FF8900]">AI</span>
+                Parivartan <span className="text-[#FF8900]">AI</span>
               </h1>
               <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-[#FF8900]/15 text-[#FF8900] border border-[#FF8900]/30 tracking-wider">
                 AI Platform

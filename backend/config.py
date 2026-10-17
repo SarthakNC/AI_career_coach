@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     Application settings with environment variable validation.
     Reads from backend/.env or system environment.
     """
-    app_name: str = "CareerProof AI API"
+    app_name: str = "Parivartan AI API"
     app_version: str = "1.0.0"
     environment: str = "development"
 

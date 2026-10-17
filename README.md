@@ -1,8 +1,8 @@
-# CareerProof AI
+# Parivartan AI
 
 > **Agentic AI platform comparing a student's verified GitHub portfolio evidence against real-world job & internship requirements.**
 
-CareerProof AI bridges the gap between traditional resumes and actual software engineering skill evidence. Rather than relying on self-reported keywords, CareerProof AI extracts evidence-grounded skills directly from real GitHub commits and compares them to parsed job descriptions using explainable, deterministic scoring and actionable gap recommendations.
+Parivartan AI bridges the gap between traditional resumes and actual software engineering skill evidence. Rather than relying on self-reported keywords, Parivartan AI extracts evidence-grounded skills directly from real GitHub commits and compares them to parsed job descriptions using explainable, deterministic scoring and actionable gap recommendations.
 
 ---
 
@@ -182,7 +182,7 @@ Open `http://localhost:5173` in your browser.
 
 ## PDF Job Description Extraction & OCR Architecture
 
-CareerProof AI supports direct PDF job description ingestion for both digital vector PDFs and scanned/rasterized documents.
+Parivartan AI supports direct PDF job description ingestion for both digital vector PDFs and scanned/rasterized documents.
 
 ```
 [Uploaded PDF]
@@ -332,7 +332,7 @@ cd backend
 ## Judge-Ready Live Demo Checklist (Phase 8 & 9)
 
 1. **Sign In & Setup**:
-   - Log into CareerProof AI at `http://localhost:5173`.
+   - Log into Parivartan AI at `http://localhost:5173`.
    - Navigate to **Job Analysis**.
 2. **PDF Job Description Ingestion**:
    - Toggle to **Upload PDF (Digital & OCR)**.

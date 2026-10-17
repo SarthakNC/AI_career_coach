@@ -1,5 +1,5 @@
 /**
- * LandingPage — Public marketing page for CareerProof AI.
+ * LandingPage — Public marketing page for Parivartan AI.
  * Sections: Hero, Features, How It Works, Benefits, CTA.
  */
 import { useNavigate } from 'react-router-dom'
@@ -139,7 +139,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-[#a8a3a3] leading-relaxed max-w-2xl mx-auto mb-10">
-              CareerProof AI compares your demonstrated coding skills with real job
+              Parivartan AI compares your demonstrated coding skills with real job
               requirements, replacing guesswork with objective, evidence-based career coaching.
             </p>
 
@@ -172,7 +172,7 @@ export default function LandingPage() {
                   <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
                   <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                   <div className="w-3 h-3 rounded-full bg-[#28ca42]" />
-                  <span className="ml-3 text-xs text-[#7d7878] font-mono">careerproof-ai — skill-gap-analysis</span>
+                  <span className="ml-3 text-xs text-[#7d7878] font-mono">parivartan-ai — skill-gap-analysis</span>
                 </div>
 
                 {/* Simulated skill-gap panel */}
@@ -269,7 +269,7 @@ export default function LandingPage() {
               Why evidence-based coaching?
             </h2>
             <p className="text-[#a8a3a3] leading-relaxed">
-              Traditional career tools rely on self-reported skills. CareerProof AI replaces
+              Traditional career tools rely on self-reported skills. Parivartan AI replaces
               assumptions with verifiable portfolio evidence.
             </p>
           </div>

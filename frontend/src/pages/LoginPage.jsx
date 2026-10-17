@@ -99,11 +99,11 @@ export default function LoginPage() {
               </div>
             </div>
             <span className="text-xl font-bold text-white">
-              CareerProof <span className="text-[#FF8900]">AI</span>
+              Parivartan <span className="text-[#FF8900]">AI</span>
             </span>
           </Link>
           <h1 className="text-2xl font-bold text-white mt-2">Welcome back</h1>
-          <p className="text-sm text-[#9c9797] mt-1">Log in to your CareerProof AI account.</p>
+          <p className="text-sm text-[#9c9797] mt-1">Log in to your Parivartan AI account.</p>
         </div>
 
         {/* Form Card */}

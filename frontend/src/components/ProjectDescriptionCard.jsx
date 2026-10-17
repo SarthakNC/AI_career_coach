@@ -16,7 +16,7 @@ export default function ProjectDescriptionCard() {
           </h2>
 
           <p className="mt-3 text-sm text-[#aba5a5] leading-relaxed">
-            Most career tools rely on unverified resume claims and buzzwords. <strong className="text-white font-medium">CareerProof AI</strong> grounds career guidance in reality by directly analyzing your <span className="text-[#FF8900] font-medium">GitHub portfolio codebase</span> and comparing proven technical competencies against target job descriptions.
+            Most career tools rely on unverified resume claims and buzzwords. <strong className="text-white font-medium">Parivartan AI</strong> grounds career guidance in reality by directly analyzing your <span className="text-[#FF8900] font-medium">GitHub portfolio codebase</span> and comparing proven technical competencies against target job descriptions.
           </p>
         </div>
 
