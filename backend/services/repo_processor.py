@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Configuration bounds
 MAX_FILES_TO_ANALYZE = 25
