@@ -76,7 +76,7 @@ export default function AssessmentSetup({
 
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#141414] border border-[#353333] text-xs text-emerald-400 font-mono shrink-0">
             <ShieldCheck className="w-4 h-4" />
-            <span>Anti-Hallucination Guardrails Active</span>
+            
           </div>
         </div>
       </div>
