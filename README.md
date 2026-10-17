@@ -726,3 +726,5 @@ Follow this workflow to demonstrate all features of Parivartan AI:
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for full details.
 
 Developed with ❤️ for software engineering students and career changers worldwide. **Parivartan AI** empowers developers to prove their technical competence through verified code evidence.
+#   A I _ c a r e e r _ c o a c h  
+ 
