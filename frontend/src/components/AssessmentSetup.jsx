@@ -227,7 +227,7 @@ export default function AssessmentSetup({
               <div>
                 <p className="text-sm font-semibold text-white">No analyzed repositories found</p>
                 <p className="text-xs text-[#8c8888] mt-1">
-                  You need to analyze at least one GitHub repository in Phase 6 before running an assessment.
+                  You need to analyze at least one GitHub repository in GitHub Portfolio before running an assessment.
                 </p>
               </div>
               <Link

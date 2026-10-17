@@ -545,3 +545,97 @@ def test_full_pipeline_run_skill_gap_assessment():
     assert assessment["prioritized_gaps"][0].skill_name == "Docker"
     assert len(assessment["recommendations"]) >= 1
 
+
+def test_match_requirement_overarching_software_engineering():
+    """Verifies that broad engineering competencies match real repository source code."""
+    req = {
+        "id": uuid.uuid4(),
+        "skill_name": "Software Engineering",
+        "category": "Core concepts and soft skills",
+        "importance": "required",
+    }
+    repo_id = uuid.uuid4()
+    evidence_pool = [
+        {
+            "id": uuid.uuid4(),
+            "repository_id": repo_id,
+            "skill_name": "JavaScript",
+            "evidence_type": "source_code",
+            "status_label": "Strong evidence",
+            "evidence_summary": "Core application code in JavaScript.",
+            "file_path": "src/index.js",
+            "confidence": 0.95,
+            "commit_sha": "abcdef123456",
+        }
+    ]
+
+    result = match_requirement_against_evidence_pool(req, evidence_pool, {str(repo_id): "PayGuard"})
+    assert result.status == "demonstrated"
+    assert result.status_score == 1.0
+    assert len(result.supporting_evidence) == 1
+    assert "PayGuard" in result.explanation
+
+
+def test_match_requirement_sde_overarching():
+    """Verifies that 'sde' alias normalizes and matches real code implementations."""
+    req = {
+        "id": uuid.uuid4(),
+        "skill_name": "sde",
+        "category": "Core concepts and soft skills",
+        "importance": "required",
+    }
+    repo_id = uuid.uuid4()
+    evidence_pool = [
+        {
+            "id": uuid.uuid4(),
+            "repository_id": repo_id,
+            "skill_name": "Python",
+            "evidence_type": "source_code",
+            "status_label": "Strong evidence",
+            "evidence_summary": "Service implementation in Python.",
+            "file_path": "main.py",
+            "confidence": 0.95,
+            "commit_sha": "abcdef123456",
+        }
+    ]
+
+    result = match_requirement_against_evidence_pool(req, evidence_pool, {str(repo_id): "backend-service"})
+    assert result.status == "demonstrated"
+    assert result.status_score == 1.0
+    assert len(result.supporting_evidence) == 1
+
+
+def test_extract_grounded_static_evidence_javascript_repo():
+    """Verifies deterministic static extraction on JavaScript and package manifests."""
+    from services.repo_analyzer import extract_grounded_static_evidence
+
+    files_map = {
+        "src/app.js": "const express = require('express');\nconst app = express();\nmodule.exports = app;\n",
+        "src/app.test.js": "test('renders app', () => { expect(true).toBe(true); });\n",
+        "package.json": json.dumps({
+            "name": "payguard",
+            "dependencies": {
+                "express": "^4.18.2",
+                "jsonwebtoken": "^9.0.0"
+            },
+            "devDependencies": {
+                "jest": "^29.5.0"
+            }
+        })
+    }
+
+    items = extract_grounded_static_evidence(
+        repo_full_name="candidate/PayGuard",
+        commit_sha="a1b2c3d4",
+        files_map=files_map
+    )
+
+    skill_names = {item.skill_name for item in items}
+    assert "JavaScript" in skill_names
+    assert "Software Engineering" in skill_names
+    assert "Unit Testing" in skill_names
+    assert "Express.js" in skill_names
+    assert "Jest" in skill_names
+    assert "Authentication & Security" in skill_names
+
+

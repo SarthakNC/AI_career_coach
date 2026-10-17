@@ -5,11 +5,11 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import {
+  Activity,
   BarChart3,
   BookOpen,
   ChevronLeft,
   GitBranch,
-  History,
   Home,
   Layers,
   LogOut,
@@ -23,8 +23,8 @@ const sidebarLinks = [
   { to: '/dashboard', icon: Home, label: 'Dashboard', end: true },
   { to: '/dashboard/jobs', icon: BookOpen, label: 'Job Analysis' },
   { to: '/dashboard/github', icon: GitBranch, label: 'GitHub Portfolio' },
+  { to: '/dashboard/activity', icon: Activity, label: 'Repository Activity' },
   { to: '/dashboard/skills', icon: BarChart3, label: 'Skill Gaps' },
-  { to: '/dashboard/history', icon: History, label: 'Assessment History' },
   { to: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ]
 

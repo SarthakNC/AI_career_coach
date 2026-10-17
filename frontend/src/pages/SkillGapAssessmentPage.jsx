@@ -3,16 +3,14 @@ import { useAuth } from '../contexts/AuthContext'
 import {
   getAssessmentOptions,
   createAssessment,
-  listAssessments,
-  getAssessmentById,
-  deleteAssessment
+  getAssessmentById
 } from '../services/api'
 import AssessmentSetup from '../components/AssessmentSetup'
 import AssessmentScoreOverview from '../components/AssessmentScoreOverview'
 import RequirementResultsTable from '../components/RequirementResultsTable'
 import PrioritizedGapsSection from '../components/PrioritizedGapsSection'
 import ActionableRecommendationsSection from '../components/ActionableRecommendationsSection'
-import AssessmentHistoryList from '../components/AssessmentHistoryList'
+import AssessmentVersionModal from '../components/AssessmentVersionModal'
 import {
   BarChart3,
   Sparkles,
@@ -22,7 +20,6 @@ import {
   Layers,
   ArrowLeft,
   Loader2,
-  RefreshCw,
   AlertCircle
 } from 'lucide-react'
 
@@ -30,22 +27,21 @@ export default function SkillGapAssessmentPage() {
   const { session } = useAuth()
   const token = session?.access_token
 
-  // Navigation tab: 'new' | 'current' | 'history'
+  // Navigation tab: 'new' | 'current'
   const [activeTab, setActiveTab] = useState('new')
   // Detail sub-view in 'current' assessment: 'requirements' | 'gaps' | 'recommendations'
   const [activeView, setActiveView] = useState('requirements')
 
   const [options, setOptions] = useState({ jobs: [], repositories: [] })
-  const [historyList, setHistoryList] = useState([])
   const [activeAssessment, setActiveAssessment] = useState(null)
+  const [showVersionModal, setShowVersionModal] = useState(false)
 
   const [loadingOptions, setLoadingOptions] = useState(true)
-  const [loadingHistory, setLoadingHistory] = useState(false)
   const [loadingAssessment, setLoadingAssessment] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  // Load initial options and history when token is present
+  // Load initial options when token is present
   useEffect(() => {
     if (token) {
       loadInitialData()
@@ -57,22 +53,12 @@ export default function SkillGapAssessmentPage() {
       setLoadingOptions(true)
       setErrorMessage('')
 
-      // 1. Load options (jobs and repositories)
       try {
         const optData = await getAssessmentOptions(token)
         setOptions(optData || { jobs: [], repositories: [] })
       } catch (optErr) {
         console.error('Failed to load assessment options:', optErr)
         setErrorMessage(optErr.message || 'Failed to load jobs or repositories.')
-      }
-
-      // 2. Load history independently so any missing assessment table never blocks setup
-      try {
-        const histData = await listAssessments(token)
-        setHistoryList(histData || [])
-      } catch (histErr) {
-        console.warn('Could not load assessment history:', histErr)
-        setHistoryList([])
       }
     } finally {
       setLoadingOptions(false)
@@ -88,11 +74,6 @@ export default function SkillGapAssessmentPage() {
       setActiveAssessment(created)
       setActiveTab('current')
       setActiveView('requirements')
-
-      // Refresh history list in background
-      listAssessments(token)
-        .then((data) => setHistoryList(data || []))
-        .catch(() => {})
     } catch (err) {
       console.error('Assessment generation error:', err)
       setErrorMessage(err.message || 'Failed to execute skill gap assessment.')
@@ -101,7 +82,7 @@ export default function SkillGapAssessmentPage() {
     }
   }
 
-  // Open an assessment from history
+  // Open an assessment version
   async function handleSelectAssessment(id) {
     try {
       setLoadingAssessment(true)
@@ -115,21 +96,6 @@ export default function SkillGapAssessmentPage() {
       setErrorMessage(err.message || 'Failed to retrieve assessment details.')
     } finally {
       setLoadingAssessment(false)
-    }
-  }
-
-  // Delete an assessment
-  async function handleDeleteAssessment(id) {
-    try {
-      await deleteAssessment(id, token)
-      setHistoryList((prev) => prev.filter((a) => a.id !== id))
-      if (activeAssessment && activeAssessment.id === id) {
-        setActiveAssessment(null)
-        setActiveTab('new')
-      }
-    } catch (err) {
-      console.error('Failed to delete assessment:', err)
-      setErrorMessage(err.message || 'Failed to delete assessment.')
     }
   }
 
@@ -174,25 +140,6 @@ export default function SkillGapAssessmentPage() {
               <span>Current Results</span>
             </button>
           )}
-
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${
-              activeTab === 'history'
-                ? 'bg-[#FF8900] text-black font-semibold'
-                : 'text-[#8c8888] hover:text-white hover:bg-[#2e2d2d]'
-            }`}
-          >
-            <History className="w-3.5 h-3.5" />
-            <span>History</span>
-            {historyList.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                activeTab === 'history' ? 'bg-black/30 text-black' : 'bg-[#333131] text-[#FF8900]'
-              }`}>
-                {historyList.length}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 
@@ -241,13 +188,22 @@ export default function SkillGapAssessmentPage() {
           <div className="space-y-6">
             {/* Top Toolbar */}
             <div className="flex items-center justify-between">
-              <button
-                onClick={() => setActiveTab('new')}
-                className="flex items-center gap-1.5 text-xs text-[#8c8888] hover:text-white transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Start another assessment</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setActiveTab('new')}
+                  className="flex items-center gap-1.5 text-xs text-[#8c8888] hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Start another assessment</span>
+                </button>
+                <button
+                  onClick={() => setShowVersionModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#252424] hover:bg-[#333131] border border-[#3d3b3b] text-xs text-amber-300 font-medium transition-colors"
+                >
+                  <History className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Version Lineage (v{activeAssessment.version || 1})</span>
+                </button>
+              </div>
 
               {/* Sub-view switcher */}
               <div className="flex items-center gap-1 p-1 rounded-lg bg-[#1a1919] border border-[#353333] text-xs">
@@ -304,6 +260,19 @@ export default function SkillGapAssessmentPage() {
             {activeView === 'recommendations' && (
               <ActionableRecommendationsSection recommendations={activeAssessment.recommendations || []} />
             )}
+
+            {/* Assessment Version Lineage Modal */}
+            {showVersionModal && activeAssessment && (
+              <AssessmentVersionModal
+                assessmentId={activeAssessment.id}
+                token={token}
+                onClose={() => setShowVersionModal(false)}
+                onSelectVersion={async (verId) => {
+                  setShowVersionModal(false)
+                  await handleSelectAssessment(verId)
+                }}
+              />
+            )}
           </div>
         ) : (
           <div className="p-12 text-center rounded-2xl bg-[#1f1e1e] border border-dashed border-[#353333] space-y-3">
@@ -316,31 +285,6 @@ export default function SkillGapAssessmentPage() {
             </button>
           </div>
         )
-      )}
-
-      {/* Tab: History */}
-      {activeTab === 'history' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-[#8c8888]">
-              Reopen any past assessment to inspect its exact evidence snapshots, score breakdown, and recommendations.
-            </p>
-            <button
-              onClick={loadInitialData}
-              className="flex items-center gap-1 text-xs text-[#FF8900] hover:text-[#ffa333] transition-colors"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Refresh History</span>
-            </button>
-          </div>
-
-          <AssessmentHistoryList
-            assessments={historyList}
-            onSelectAssessment={handleSelectAssessment}
-            onDeleteAssessment={handleDeleteAssessment}
-            loading={loadingHistory}
-          />
-        </div>
       )}
     </div>
   )

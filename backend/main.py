@@ -5,6 +5,7 @@ from database import check_database_connection
 from routes.jobs import router as jobs_router
 from routes.github import router as github_router
 from routes.assessments import router as assessments_router
+from routes.github_changes import router as github_changes_router
 
 settings = get_settings()
 
@@ -29,6 +30,7 @@ app.add_middleware(
 app.include_router(jobs_router)
 app.include_router(github_router)
 app.include_router(assessments_router)
+app.include_router(github_changes_router)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK, tags=["Health"])

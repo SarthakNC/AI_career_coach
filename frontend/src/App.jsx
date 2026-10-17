@@ -1,6 +1,4 @@
-/**
- * App — Root component with React Router and AuthProvider.
- */
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -12,6 +10,7 @@ import DashboardPage from './pages/DashboardPage'
 import JobAnalysisPage from './pages/JobAnalysisPage'
 import GitHubPortfolioPage from './pages/GitHubPortfolioPage'
 import SkillGapAssessmentPage from './pages/SkillGapAssessmentPage'
+import RepositoryActivityPage from './pages/RepositoryActivityPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -37,8 +36,8 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="jobs" element={<JobAnalysisPage />} />
             <Route path="github" element={<GitHubPortfolioPage />} />
+            <Route path="activity" element={<RepositoryActivityPage />} />
             <Route path="skills" element={<SkillGapAssessmentPage />} />
-            <Route path="history" element={<SkillGapAssessmentPage />} />
             <Route path="settings" element={<ComingSoonPage />} />
           </Route>
 

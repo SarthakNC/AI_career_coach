@@ -61,8 +61,9 @@ export default function AssessmentScoreOverview({ assessment }) {
                 <Calendar className="w-3 h-3 text-[#FF8900]" />
                 {formattedDate}
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
-                Phase 7 Verified
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3 h-3" />
+                AI Evidence Verified
               </span>
             </div>
 
@@ -183,7 +184,7 @@ export default function AssessmentScoreOverview({ assessment }) {
               </div>
             </div>
             <p className="text-[11px] text-zinc-400 pt-1 italic">
-              Limitation: The assessment strictly represents evidence extracted from repository files and commits processed during Phase 6 analysis. Absence of evidence does not indicate absence of skill.
+              Limitation: The assessment strictly represents evidence extracted from repository files and commits processed during repository analysis. Absence of evidence does not indicate absence of skill.
             </p>
           </div>
         )}

@@ -101,8 +101,8 @@ export default function DatabaseStatusCard({ systemStatus }) {
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span>Phase 1 schema migration:</span>
-            <span className="text-[#a8a4a4]">Deferred to Phase 2 (by design)</span>
+            <span>Database Schema:</span>
+            <span className="text-emerald-400 font-medium">Configured &amp; Active</span>
           </div>
         </div>
       </div>

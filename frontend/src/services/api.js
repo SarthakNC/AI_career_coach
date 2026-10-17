@@ -376,7 +376,7 @@ export async function getPortfolioSummary(token) {
 
 /**
  * ─────────────────────────────────────────────────────────────
- * Phase 7: AI-Powered Skill-Gap Assessment API
+ * AI-Powered Skill-Gap Assessment API
  * ─────────────────────────────────────────────────────────────
  */
 
@@ -491,6 +491,173 @@ export async function deleteAssessment(assessmentId, token) {
     } catch {}
     throw new Error(err)
   }
+}
+
+/**
+ * Fetch GitHub repository monitoring status and overview.
+ * @param {string} token
+ * @returns {Promise<Object>}
+ */
+export async function getMonitoringStatus(token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/monitoring/status`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to fetch monitoring status'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+/**
+ * Phase 8: Trigger an immediate commit sync check for a single repository.
+ * @param {string} repositoryId
+ * @param {string} token
+ * @returns {Promise<Object>}
+ */
+export async function syncRepository(repositoryId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/repositories/${repositoryId}/sync`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Repository sync failed'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+/**
+ * Phase 8: List persisted repository change events.
+ * @param {string} token
+ * @param {number} limit
+ * @returns {Promise<{events: Array, total: number}>}
+ */
+export async function listChangeEvents(token, limit = 20) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/changes?limit=${limit}`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to load change events'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+/**
+ * Phase 8: Get details of a specific change event.
+ * @param {string} changeId
+ * @param {string} token
+ * @returns {Promise<Object>}
+ */
+export async function getChangeEventById(changeId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/changes/${changeId}`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to load change event details'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+/**
+ * Phase 8: Retry a failed change event.
+ * @param {string} changeId
+ * @param {string} token
+ * @returns {Promise<Object>}
+ */
+export async function retryChangeEvent(changeId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/github/changes/${changeId}/retry`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Retry failed'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
+}
+
+/**
+ * Phase 8: Get version history/lineage of an assessment.
+ * @param {string} assessmentId
+ * @param {string} token
+ * @returns {Promise<{assessment_id: string, job_title: string, company_name: string, current_version: number, versions: Array}>}
+ */
+export async function getAssessmentHistory(assessmentId, token) {
+  if (!token) throw new Error('Authentication required.')
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/assessments/${assessmentId}/history`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    let err = 'Failed to load assessment version history'
+    try {
+      const data = await response.json()
+      if (data.detail) err = data.detail
+    } catch {}
+    throw new Error(err)
+  }
+  return await response.json()
 }
 
 export { API_BASE_URL }

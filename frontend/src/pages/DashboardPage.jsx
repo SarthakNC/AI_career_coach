@@ -60,7 +60,7 @@ export default function DashboardPage() {
       icon: BookOpen,
       title: 'Job Analysis',
       description: 'Parse a real job posting to extract required skills and competencies.',
-      action: 'Active (Phase 5)',
+      action: 'Analyze Jobs',
       link: '/dashboard/jobs',
       color: '#FF8900',
     },
@@ -68,7 +68,7 @@ export default function DashboardPage() {
       icon: GitBranch,
       title: 'GitHub Portfolio',
       description: 'Connect your GitHub profile to analyze repository evidence.',
-      action: 'Active (Phase 6)',
+      action: 'View Portfolio',
       link: '/dashboard/github',
       color: '#22c55e',
     },
@@ -76,7 +76,7 @@ export default function DashboardPage() {
       icon: BarChart3,
       title: 'Skill-Gap Assessment',
       description: 'Compare your demonstrated skills against job requirements.',
-      action: 'Active (Phase 7)',
+      action: 'Evaluate Skills',
       link: '/dashboard/skills',
       color: '#8b5cf6',
     },
@@ -229,15 +229,18 @@ export default function DashboardPage() {
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-white mb-1">Repository Monitoring</h2>
+            <h2 className="text-base font-semibold text-white mb-1">Repository Monitoring &amp; Automatic Reassessment</h2>
             <p className="text-sm text-[#a8a3a3] leading-relaxed">
-              Once you complete your first assessment, CareerProof AI will automatically
-              re-analyze your repositories when you push code updates. Reassessment will
-              reflect genuine improvements in your skill profile — available in a future phase.
+              CareerProof AI continuously monitors your connected GitHub repositories. When you push new commits,
+              your verified skills and job match scores update automatically.
             </p>
-            <span className="inline-block mt-3 text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-[#333131] text-[#b0abab] border border-[#484545] tracking-wider">
-              Coming in Phase 5
-            </span>
+            <Link
+              to="/dashboard/activity"
+              className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold px-3.5 py-1.5 rounded-xl bg-[#FF8900] text-black hover:bg-[#e07800] transition-colors"
+            >
+              <span>View Repository Activity</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </div>

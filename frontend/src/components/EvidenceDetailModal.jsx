@@ -83,7 +83,7 @@ export default function EvidenceDetailModal({ item, onClose }) {
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[#8c8888] mb-3 flex items-center justify-between">
               <span>Verified Evidence Records ({evidenceList.length})</span>
               <span className="text-[11px] text-[#FF8900] normal-case font-normal">
-                Direct Phase 6 Analysis Snapshots
+                Direct Repository Evidence Snapshots
               </span>
             </h4>
 

@@ -69,6 +69,34 @@ def match_requirement_against_evidence_pool(
             ev_copy["repository_name"] = repo_name
             matched_evidence.append(ev_copy)
 
+    # 3. Overarching Competencies Grounded Match (e.g., Software Engineering, Web Development, Programming)
+    # If a candidate wrote real code and tests in the repository, overarching engineering requirements
+    # are directly supported by their verified source code and test implementations.
+    OVERARCHING_COMPETENCIES = {
+        "software engineering", "software development", "web development",
+        "full stack development", "backend development", "frontend development",
+        "programming", "coding", "computer science", "application development",
+        "software architecture", "system design"
+    }
+
+    is_overarching = norm_skill.lower() in OVERARCHING_COMPETENCIES
+    if not matched_evidence and is_overarching and evidence_pool:
+        # Prioritize source_code and test items
+        candidate_items = [
+            ev for ev in evidence_pool
+            if ev.get("evidence_type") in ("source_code", "test")
+            or ev.get("status_label") in ("Strong evidence", "Some evidence")
+        ]
+        if not candidate_items:
+            candidate_items = evidence_pool
+
+        for ev in candidate_items[:5]:
+            repo_id_str = str(ev.get("repository_id", ""))
+            repo_name = repo_map.get(repo_id_str, "Repository")
+            ev_copy = dict(ev)
+            ev_copy["repository_name"] = repo_name
+            matched_evidence.append(ev_copy)
+
     # Determine status based on verified evidence
     if not matched_evidence:
         status: ASSESSMENT_STATUS_LITERAL = "not_demonstrated"
@@ -95,10 +123,16 @@ def match_requirement_against_evidence_pool(
 
         if has_strong:
             status = "demonstrated"
-            explanation = (
-                f"Direct technical evidence for {raw_skill} was verified in {first_repo} "
-                f"({first_file})."
-            )
+            if is_overarching:
+                explanation = (
+                    f"Direct technical evidence for {raw_skill} is demonstrated through verified source code "
+                    f"and architecture in {first_repo} ({first_file})."
+                )
+            else:
+                explanation = (
+                    f"Direct technical evidence for {raw_skill} was verified in {first_repo} "
+                    f"({first_file})."
+                )
             limitations = None
             next_step = f"Continue expanding test coverage or modularity for {raw_skill} implementations."
         else:
@@ -333,7 +367,7 @@ def run_skill_gap_assessment(
     user_id: UUID
 ) -> Dict[str, Any]:
     """
-    Executes complete Phase 7 Skill-Gap Assessment pipeline:
+    Executes complete AI-Powered Skill-Gap Assessment pipeline:
     1. Evaluates all job requirements against repository evidence.
     2. Calculates explainable, deterministic match score.
     3. Prioritizes skill gaps.

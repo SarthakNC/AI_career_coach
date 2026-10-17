@@ -17,7 +17,7 @@ export default function Header({ apiBaseUrl }) {
                 CareerProof <span className="text-[#FF8900]">AI</span>
               </h1>
               <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-[#FF8900]/15 text-[#FF8900] border border-[#FF8900]/30 tracking-wider">
-                Phase 1
+                AI Platform
               </span>
             </div>
             <p className="text-xs text-[#9e9a9a] m-0 font-medium tracking-wide">

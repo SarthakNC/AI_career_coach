@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple
 from schemas.github import (
     SkillEvidenceItem,
     ProjectInsights,
@@ -12,6 +12,7 @@ from schemas.github import (
     AnalysisCoverage,
 )
 from services.llm_service import call_llm_api
+from services.skill_normalizer import normalize_skill_name
 
 GITHUB_ANALYSIS_PROMPT = """You are a senior software architect and technical hiring committee reviewer.
 Analyze the following source files retrieved from a real GitHub repository at a specific commit.
@@ -103,6 +104,188 @@ def calculate_calibrated_confidence(evidence_type: str, status_label: str) -> fl
         ("documentation", "Mentioned only"): 0.40,
     }
     return weights.get((evidence_type, status_label), 0.65)
+
+
+def extract_grounded_static_evidence(
+    repo_full_name: str,
+    commit_sha: str,
+    files_map: Dict[str, str]
+) -> List[SkillEvidenceItem]:
+    """
+    Extracts deterministic, grounded skill evidence directly from actual repository
+    source files, manifests, and test suites.
+    Guarantees foundational evidence (e.g. JavaScript, Python, Software Engineering, dependencies)
+    even when LLM is unavailable, rate-limited, or misses core technologies.
+    """
+    static_items: List[SkillEvidenceItem] = []
+    seen_skills: Set[str] = set()
+
+    def add_item(
+        skill_name: str,
+        category: str,
+        evidence_type: str,
+        status_label: str,
+        evidence_summary: str,
+        file_path: str,
+        start_line: int = 1,
+        end_line: int = 15
+    ):
+        norm = normalize_skill_name(skill_name).lower()
+        if norm in seen_skills:
+            return
+        seen_skills.add(norm)
+
+        content = files_map.get(file_path, "")
+        excerpt = extract_real_code_excerpt(content, start_line, end_line)
+        confidence = calculate_calibrated_confidence(evidence_type, status_label)
+        github_url = f"https://github.com/{repo_full_name}/blob/{commit_sha}/{file_path}#L{start_line}-L{end_line}"
+
+        static_items.append(
+            SkillEvidenceItem(
+                skill_name=skill_name,
+                category=category,
+                evidence_type=evidence_type,
+                status_label=status_label,
+                evidence_summary=evidence_summary,
+                file_path=file_path,
+                line_start=start_line,
+                line_end=end_line,
+                code_excerpt=excerpt,
+                github_url=github_url,
+                commit_sha=commit_sha,
+                confidence=confidence,
+                limitations=None
+            )
+        )
+
+    # 1. Languages from file extensions
+    ext_lang_map = {
+        (".js", ".jsx", ".mjs", ".cjs"): ("JavaScript", "Programming languages and frameworks"),
+        (".ts", ".tsx"): ("TypeScript", "Programming languages and frameworks"),
+        (".py",): ("Python", "Programming languages and frameworks"),
+        (".html", ".htm"): ("HTML", "Tools and platforms"),
+        (".css", ".scss", ".sass"): ("CSS", "Tools and platforms"),
+        (".go",): ("Go", "Programming languages and frameworks"),
+        (".java",): ("Java", "Programming languages and frameworks"),
+        (".rs",): ("Rust", "Programming languages and frameworks"),
+        (".sql",): ("SQL", "Databases and storage"),
+    }
+
+    primary_source_file = None
+    test_file = None
+
+    for path in files_map:
+        lower = path.lower()
+        if any(term in lower for term in (".test.", ".spec.", "test_", "_test.", "/tests/", "/test/")):
+            if not test_file:
+                test_file = path
+        elif not primary_source_file and any(path.endswith(ext) for group in ext_lang_map for ext in group):
+            primary_source_file = path
+
+        for exts, (lang_name, cat) in ext_lang_map.items():
+            if any(path.endswith(ext) for ext in exts):
+                add_item(
+                    skill_name=lang_name,
+                    category=cat,
+                    evidence_type="source_code",
+                    status_label="Strong evidence",
+                    evidence_summary=f"Direct {lang_name} source code implementation verified in {path}.",
+                    file_path=path,
+                    start_line=1,
+                    end_line=15
+                )
+
+    # 2. Software Engineering core discipline
+    chosen_code_file = primary_source_file or (test_file if test_file else (next(iter(files_map.keys()), "") if files_map else ""))
+    if chosen_code_file:
+        add_item(
+            skill_name="Software Engineering",
+            category="Core concepts and soft skills",
+            evidence_type="source_code",
+            status_label="Strong evidence",
+            evidence_summary=f"Applied software engineering and architecture implementation verified in {chosen_code_file}.",
+            file_path=chosen_code_file,
+            start_line=1,
+            end_line=15
+        )
+
+    # 3. Unit Testing if tests exist
+    if test_file:
+        add_item(
+            skill_name="Unit Testing",
+            category="Engineering practices and workflows",
+            evidence_type="test",
+            status_label="Strong evidence",
+            evidence_summary=f"Automated test suite implementation verified in {test_file}.",
+            file_path=test_file,
+            start_line=1,
+            end_line=15
+        )
+
+    # 4. Manifest inspection: package.json
+    for path, content in files_map.items():
+        if path.endswith("package.json"):
+            try:
+                pkg = json.loads(content)
+                deps = {}
+                if isinstance(pkg.get("dependencies"), dict):
+                    deps.update(pkg["dependencies"])
+                if isinstance(pkg.get("devDependencies"), dict):
+                    deps.update(pkg["devDependencies"])
+
+                dep_skill_map = {
+                    "react": ("React", "Programming languages and frameworks"),
+                    "express": ("Express.js", "Programming languages and frameworks"),
+                    "next": ("Next.js", "Programming languages and frameworks"),
+                    "vue": ("Vue.js", "Programming languages and frameworks"),
+                    "tailwindcss": ("Tailwind CSS", "Tools and platforms"),
+                    "jest": ("Jest", "Engineering practices and workflows"),
+                    "vitest": ("Vitest", "Engineering practices and workflows"),
+                    "mocha": ("Mocha", "Engineering practices and workflows"),
+                    "axios": ("REST API", "Programming languages and frameworks"),
+                    "mongoose": ("MongoDB", "Databases and storage"),
+                    "mongodb": ("MongoDB", "Databases and storage"),
+                    "pg": ("PostgreSQL", "Databases and storage"),
+                    "@prisma/client": ("Prisma ORM", "Databases and storage"),
+                    "prisma": ("Prisma ORM", "Databases and storage"),
+                    "jsonwebtoken": ("Authentication & Security", "Core concepts and soft skills"),
+                    "bcrypt": ("Authentication & Security", "Core concepts and soft skills"),
+                    "bcryptjs": ("Authentication & Security", "Core concepts and soft skills"),
+                    "cors": ("REST API", "Programming languages and frameworks"),
+                    "dotenv": ("Configuration Management", "Engineering practices and workflows"),
+                }
+
+                for dep_key, (sk_name, cat) in dep_skill_map.items():
+                    if dep_key in deps:
+                        add_item(
+                            skill_name=sk_name,
+                            category=cat,
+                            evidence_type="dependency",
+                            status_label="Some evidence",
+                            evidence_summary=f"Dependency '{dep_key}' declared in {path}.",
+                            file_path=path,
+                            start_line=1,
+                            end_line=15
+                        )
+            except Exception:
+                pass
+
+        elif path.endswith("requirements.txt") or path.endswith("Pipfile"):
+            lines = content.splitlines()
+            for line in lines:
+                l_lower = line.strip().lower()
+                if "fastapi" in l_lower:
+                    add_item("FastAPI", "Programming languages and frameworks", "dependency", "Some evidence", f"FastAPI dependency in {path}", path)
+                elif "flask" in l_lower:
+                    add_item("Flask", "Programming languages and frameworks", "dependency", "Some evidence", f"Flask dependency in {path}", path)
+                elif "django" in l_lower:
+                    add_item("Django", "Programming languages and frameworks", "dependency", "Some evidence", f"Django dependency in {path}", path)
+                elif "pytest" in l_lower:
+                    add_item("Pytest", "Engineering practices and workflows", "dependency", "Some evidence", f"Pytest dependency in {path}", path)
+                elif "sqlalchemy" in l_lower:
+                    add_item("SQLAlchemy", "Databases and storage", "dependency", "Some evidence", f"SQLAlchemy dependency in {path}", path)
+
+    return static_items
 
 
 def analyze_repository_files_with_llm(
@@ -205,6 +388,15 @@ Analyzed Files ({len(files_map)} files):
             )
         )
 
+    # Merge static grounded evidence with LLM evidence (avoiding duplicates)
+    static_evidence = extract_grounded_static_evidence(repo_full_name, commit_sha, files_map)
+    existing_skill_norms = {normalize_skill_name(ev.skill_name).lower() for ev in verified_evidence}
+
+    for static_ev in static_evidence:
+        if normalize_skill_name(static_ev.skill_name).lower() not in existing_skill_norms:
+            verified_evidence.append(static_ev)
+            existing_skill_norms.add(normalize_skill_name(static_ev.skill_name).lower())
+
     # 2. Validate Project Insights
     raw_insights = (
         raw_response.get("project_insights")
@@ -215,8 +407,11 @@ Analyzed Files ({len(files_map)} files):
 
     # Tech stack
     tech_stack = []
+    seen_tech = set()
     for ts in raw_insights.get("tech_stack", []):
         tech_name = str(ts.get("name") or ts.get("technology") or ts.get("tech") or ts.get("skill") or "Unknown").strip()
+        norm_t = normalize_skill_name(tech_name).lower()
+        seen_tech.add(norm_t)
         tech_stack.append(
             TechStackItem(
                 name=tech_name,
@@ -226,6 +421,21 @@ Analyzed Files ({len(files_map)} files):
                 is_direct_implementation=ts.get("is_direct_implementation", True),
             )
         )
+
+    # Ensure detected static languages and frameworks are reflected in tech stack
+    for static_ev in static_evidence:
+        norm_s = normalize_skill_name(static_ev.skill_name).lower()
+        if norm_s not in seen_tech:
+            seen_tech.add(norm_s)
+            tech_stack.append(
+                TechStackItem(
+                    name=static_ev.skill_name,
+                    category=static_ev.category,
+                    evidence_type=static_ev.evidence_type,
+                    detection_source=f"Static analysis of {static_ev.file_path}",
+                    is_direct_implementation=static_ev.evidence_type == "source_code",
+                )
+            )
 
     # Architecture
     raw_arch = raw_insights.get("architecture", {})
@@ -304,3 +514,59 @@ Analyzed Files ({len(files_map)} files):
     )
 
     return verified_evidence, project_insights
+
+
+def analyze_repository_workflow(
+    full_name: str,
+    commit_sha: str,
+    default_branch: str = "main"
+) -> Tuple[ProjectInsights, List[SkillEvidenceItem], int, int]:
+    """
+    Complete end-to-end repository file analysis workflow:
+    1. Fetches recursive tree from GitHub.
+    2. Filters & ranks high-signal files within safety and token limits.
+    3. Fetches raw file contents at target commit SHA.
+    4. Evaluates evidence and project architecture insights with LLM.
+    Returns (project_insights, evidence_items, total_discovered, files_analyzed_count).
+    """
+    from fastapi import HTTPException, status
+    from services.github_service import fetch_repo_git_tree, fetch_raw_file_content
+    from services.repo_processor import filter_and_rank_tree, sanitize_source_content
+
+    tree = fetch_repo_git_tree(full_name, commit_sha)
+    if not tree:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Repository {full_name} is empty or contains no readable files."
+        )
+
+    selected_items, skipped_reasons = filter_and_rank_tree(tree)
+    if not selected_items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No qualifying source or configuration files were found to analyze within safety bounds."
+        )
+
+    files_map = {}
+    for item in selected_items:
+        path = item.get("path")
+        blob_sha = item.get("sha")
+        content = fetch_raw_file_content(full_name, commit_sha, path, blob_sha=blob_sha)
+        if content:
+            files_map[path] = sanitize_source_content(content)
+
+    if not files_map:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to retrieve file contents from GitHub API. Please check repository accessibility or configure GITHUB_TOKEN in backend/.env."
+        )
+
+    evidence_items, project_insights = analyze_repository_files_with_llm(
+        repo_full_name=full_name,
+        commit_sha=commit_sha,
+        files_map=files_map,
+        total_discovered=len(tree),
+        skipped_reasons=skipped_reasons
+    )
+
+    return project_insights, evidence_items, len(tree), len(files_map)
