@@ -4,6 +4,7 @@
  * Uses real user data — no fabricated scores or fake history.
  */
 import { useEffect, useState, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { checkBackendHealth, getSystemStatus, API_BASE_URL } from '../services/api'
 import {
@@ -59,21 +60,24 @@ export default function DashboardPage() {
       icon: BookOpen,
       title: 'Job Analysis',
       description: 'Parse a real job posting to extract required skills and competencies.',
-      action: 'Coming Soon',
+      action: 'Active (Phase 5)',
+      link: '/dashboard/jobs',
       color: '#FF8900',
     },
     {
       icon: GitBranch,
       title: 'GitHub Portfolio',
       description: 'Connect your GitHub profile to analyze repository evidence.',
-      action: 'Coming Soon',
+      action: 'Active (Phase 6)',
+      link: '/dashboard/github',
       color: '#22c55e',
     },
     {
       icon: BarChart3,
       title: 'Skill-Gap Assessment',
       description: 'Compare your demonstrated skills against job requirements.',
-      action: 'Coming Soon',
+      action: 'Active (Phase 7)',
+      link: '/dashboard/skills',
       color: '#8b5cf6',
     },
   ]
@@ -168,24 +172,25 @@ export default function DashboardPage() {
           {featureCards.map((card) => {
             const Icon = card.icon
             return (
-              <div
+              <Link
                 key={card.title}
-                className="rounded-2xl border border-[#3a3838] bg-gradient-to-b from-[#2a2929] to-[#242323] p-6 group hover:border-[#FF8900]/30 transition-all"
+                to={card.link}
+                className="rounded-2xl border border-[#3a3838] bg-gradient-to-b from-[#2a2929] to-[#242323] p-6 group hover:border-[#FF8900]/40 transition-all block cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div
-                    className="p-2.5 rounded-xl bg-[#1c1b1b] border border-[#383636]"
+                    className="p-2.5 rounded-xl bg-[#1c1b1b] border border-[#383636] group-hover:border-[#FF8900]/30 transition-colors"
                     style={{ color: card.color }}
                   >
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-[#333131] text-[#b0abab] border border-[#484545] tracking-wider">
+                  <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-[#333131] text-[#b0abab] border border-[#484545] tracking-wider group-hover:text-white transition-colors">
                     {card.action}
                   </span>
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">{card.title}</h3>
+                <h3 className="text-base font-semibold text-white mb-2 group-hover:text-[#FF8900] transition-colors">{card.title}</h3>
                 <p className="text-sm text-[#a8a3a3] leading-relaxed">{card.description}</p>
-              </div>
+              </Link>
             )
           })}
         </div>
