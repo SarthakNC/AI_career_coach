@@ -1,4 +1,4 @@
--- CareerProof AI — Phase 5: Job Requirement Analyzer Schema
+-- Parivartan AI — Phase 5: Job Requirement Analyzer Schema
 -- Migration: phase5_job_analyzer.sql
 
 -- Enable UUID extension if not enabled

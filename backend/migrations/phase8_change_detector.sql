@@ -1,4 +1,4 @@
--- CareerProof AI — Phase 8: Automatic GitHub Change Detection & AI Career Reassessment
+-- Parivartan AI — Phase 8: Automatic GitHub Change Detection & AI Career Reassessment
 -- Migration: phase8_change_detector.sql
 
 -- 1. Create `github_change_events` table for durable change processing

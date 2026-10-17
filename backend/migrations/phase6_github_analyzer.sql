@@ -1,4 +1,4 @@
--- CareerProof AI — Phase 6: AI-Powered GitHub Portfolio Analyzer Schema
+-- Parivartan AI — Phase 6: AI-Powered GitHub Portfolio Analyzer Schema
 -- Migration: phase6_github_analyzer.sql
 
 -- 1. Create `repositories` table

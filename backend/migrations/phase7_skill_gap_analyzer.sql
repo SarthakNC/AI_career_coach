@@ -1,4 +1,4 @@
--- CareerProof AI — Phase 7: AI-Powered Skill-Gap Assessment Schema
+-- Parivartan AI — Phase 7: AI-Powered Skill-Gap Assessment Schema
 -- Migration: phase7_skill_gap_analyzer.sql
 
 -- 1. Create `assessments` table
