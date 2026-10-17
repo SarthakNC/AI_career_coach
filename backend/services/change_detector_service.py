@@ -250,7 +250,9 @@ def reconcile_and_reassess_repository(
         insights, new_evidence_items, total_discovered, files_analyzed = analyze_repository_workflow(
             full_name=full_name,
             commit_sha=detected_sha,
-            default_branch=default_branch
+            default_branch=default_branch,
+            user_id=user_id,
+            repo_id=UUID(repo_id)
         )
 
         # 3. Persist new completed analysis_runs record and its skill evidence

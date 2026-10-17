@@ -385,10 +385,38 @@ def run_skill_gap_assessment(
         for r in repositories
     }
 
-    # 1. Match each requirement against evidence
+    # 1. Match each requirement against evidence using RAG + fallback
     requirement_results: List[RequirementResultItem] = []
+    selected_repo_uuids = [UUID(str(r["id"])) for r in repositories if r.get("id")]
+
     for req in requirements:
-        result_item = match_requirement_against_evidence_pool(req, evidence_pool, repo_map)
+        skill_name = req.get("skill_name", "")
+        category = req.get("category", "")
+        desc = req.get("description", "") or req.get("source_excerpt", "")
+
+        # Semantic retrieval from ChromaDB
+        retrieved_chunks = []
+        try:
+            from services.rag_vector_service import retrieve_evidence_for_skill
+            retrieved_chunks = retrieve_evidence_for_skill(
+                user_id=user_id,
+                repository_ids=selected_repo_uuids,
+                skill_name=skill_name,
+                category=category,
+                query_context=desc,
+                top_k=4
+            )
+        except Exception as e:
+            logger.warning(f"RAG retrieval skipped for skill '{skill_name}': {e}")
+
+        # If chunks found via RAG, evaluate with RAG evaluator
+        if retrieved_chunks and any(c.get("relevance_score", 0.0) >= 0.25 for c in retrieved_chunks):
+            from services.rag_assessment_evaluator import evaluate_requirement_with_rag
+            result_item = evaluate_requirement_with_rag(req, retrieved_chunks, repo_map)
+        else:
+            # Fallback to static evidence pool matching
+            result_item = match_requirement_against_evidence_pool(req, evidence_pool, repo_map)
+
         requirement_results.append(result_item)
 
     # 2. Deterministic Scoring

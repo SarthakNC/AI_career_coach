@@ -1,4 +1,4 @@
-import { X, ExternalLink, FileCode, CheckCircle2, AlertTriangle, XCircle, ShieldAlert, GitCommit } from 'lucide-react'
+import { X, ExternalLink, FileCode, CheckCircle2, AlertTriangle, XCircle, ShieldAlert, GitCommit, Cpu, Database, Layers } from 'lucide-react'
 
 export default function EvidenceDetailModal({ item, onClose }) {
   if (!item) return null
@@ -78,6 +78,36 @@ export default function EvidenceDetailModal({ item, onClose }) {
             )}
           </div>
 
+          {/* RAG Vector Retrieval Status Card */}
+          {(item.evaluation_method?.includes('rag') || item.rag_chunks_count > 0 || evidenceList.some((e) => e.rag_retrieved)) && (
+            <div className="p-3.5 rounded-xl bg-purple-950/25 border border-purple-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-purple-900/40 border border-purple-700/50">
+                  <Database className="w-4 h-4 text-purple-300" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>ChromaDB Vector Retrieval Pipeline</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      RAG Verified
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-purple-200/80 m-0">
+                    Semantic cosine distance match against language-aware indexed repository code chunks.
+                  </p>
+                </div>
+              </div>
+
+              {item.rag_chunks_count > 0 && (
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-mono font-bold text-purple-300 px-2 py-1 rounded bg-purple-900/60 border border-purple-700/60">
+                    {item.rag_chunks_count} {item.rag_chunks_count === 1 ? 'Chunk' : 'Chunks'} Indexed
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Supporting Evidence List */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[#8c8888] mb-3 flex items-center justify-between">
@@ -110,6 +140,12 @@ export default function EvidenceDetailModal({ item, onClose }) {
                         {ev.line_start && (
                           <span className="text-[#8c8888] font-mono text-[11px]">
                             L{ev.line_start}{ev.line_end && ev.line_end !== ev.line_start ? `-L${ev.line_end}` : ''}
+                          </span>
+                        )}
+                        {ev.rag_retrieved && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                            <Cpu className="w-3 h-3 text-purple-400" />
+                            RAG Chunk
                           </span>
                         )}
                       </div>
@@ -147,11 +183,24 @@ export default function EvidenceDetailModal({ item, onClose }) {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between text-[11px] text-[#8c8888] pt-1">
-                      <span>Type: <strong className="text-[#b0abab]">{ev.evidence_type}</strong></span>
-                      {ev.confidence && (
-                        <span>Confidence: <strong className="text-emerald-400">{(ev.confidence * 100).toFixed(0)}%</strong></span>
-                      )}
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#8c8888] pt-1 border-t border-[#2e2d2d]">
+                      <div className="flex items-center gap-3">
+                        <span>Type: <strong className="text-[#b0abab]">{ev.chunk_type || ev.evidence_type}</strong></span>
+                        {ev.language && (
+                          <span>Language: <strong className="text-[#b0abab]">{ev.language}</strong></span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {ev.relevance_score !== undefined && (
+                          <span>Relevance: <strong className="text-purple-300 font-mono">{Math.round(ev.relevance_score * 100)}%</strong></span>
+                        )}
+                        {ev.retrieval_distance !== undefined && (
+                          <span>Distance: <strong className="text-[#aaa] font-mono">{Number(ev.retrieval_distance).toFixed(3)}</strong></span>
+                        )}
+                        {ev.confidence !== undefined && ev.relevance_score === undefined && (
+                          <span>Confidence: <strong className="text-emerald-400">{(ev.confidence * 100).toFixed(0)}%</strong></span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

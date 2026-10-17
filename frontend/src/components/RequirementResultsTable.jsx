@@ -7,7 +7,8 @@ import {
   XCircle,
   Eye,
   FileCode,
-  Tag
+  Tag,
+  Cpu
 } from 'lucide-react'
 import EvidenceDetailModal from './EvidenceDetailModal'
 
@@ -178,6 +179,16 @@ export default function RequirementResultsTable({ results = [] }) {
                     >
                       {item.importance === 'required' ? 'Required' : 'Preferred'}
                     </span>
+
+                    {(item.rag_chunks_count > 0 || item.evaluation_method?.includes('rag') || (item.supporting_evidence || []).some(e => e.rag_retrieved)) && (
+                      <span
+                        title="Evaluated with ChromaDB Semantic Vector Retrieval"
+                        className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30"
+                      >
+                        <Cpu className="w-3 h-3 text-purple-400" />
+                        RAG Verified
+                      </span>
+                    )}
                   </div>
 
                   {/* Status Badge */}

@@ -203,6 +203,45 @@ def get_assessment(
     )
 
 
+@router.get("/{assessment_id}/rag-evidence/{requirement_id}", status_code=status.HTTP_200_OK)
+def get_assessment_rag_evidence(
+    assessment_id: UUID,
+    requirement_id: UUID,
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """
+    Returns the real-time ChromaDB RAG evidence and citations for a specific assessment requirement.
+    """
+    assessment = get_assessment_by_id(
+        assessment_id=assessment_id,
+        user_id=current_user.user_id,
+        token=current_user.token
+    )
+    req_results = assessment.get("requirement_results", [])
+    target_result = None
+    for r in req_results:
+        if str(r.get("requirement_id")) == str(requirement_id) or str(r.get("id")) == str(requirement_id):
+            target_result = r
+            break
+
+    if not target_result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Requirement {requirement_id} not found in assessment {assessment_id}."
+        )
+
+    return {
+        "assessment_id": assessment_id,
+        "requirement_id": requirement_id,
+        "skill_name": target_result.get("skill_name"),
+        "status": target_result.get("status"),
+        "status_score": target_result.get("status_score"),
+        "explanation": target_result.get("explanation"),
+        "supporting_evidence": target_result.get("supporting_evidence", []),
+        "evidence_count": len(target_result.get("supporting_evidence", [])),
+    }
+
+
 @router.delete("/{assessment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_assessment(
     assessment_id: UUID,
@@ -218,3 +257,4 @@ def remove_assessment(
         token=current_user.token
     )
     return None
+
