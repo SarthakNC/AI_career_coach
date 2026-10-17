@@ -60,8 +60,17 @@ def clean_llm_json_response(raw_text: str) -> dict:
     if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
         text = text[first_brace:last_brace + 1]
 
+    # Attempt 1: Standard json.loads with strict=False to allow unescaped control chars
     try:
-        return json.loads(text)
+        return json.loads(text, strict=False)
+    except Exception:
+        pass
+
+    # Attempt 2: Fix invalid escape sequences (e.g. \_ or \s or unescaped backslashes in code snippets/regexes)
+    # Valid JSON escapes: \", \\, \/, \b, \f, \n, \r, \t, \uXXXX
+    sanitized_text = re.sub(r'\\(?![/"\\bfnrtu])', r'\\\\', text)
+    try:
+        return json.loads(sanitized_text, strict=False)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -70,14 +79,16 @@ def clean_llm_json_response(raw_text: str) -> dict:
 
 
 def call_llm_api(
-    prompt: str,
-    job_text: str,
+    prompt: str = SYSTEM_PROMPT,
+    job_text: str = "",
     job_title: Optional[str] = None,
-    company_name: Optional[str] = None
+    company_name: Optional[str] = None,
+    user_prompt: Optional[str] = None,
 ) -> dict:
     """
     Calls the configured LLM API using httpx.
     Supports Google Gemini (via generateContent endpoint) or OpenAI-compatible endpoints.
+    Accepts custom system prompt and custom user_prompt.
     """
     settings = get_settings()
     api_key = settings.llm_api_key
@@ -89,9 +100,13 @@ def call_llm_api(
         )
 
     clean_key = api_key.strip()
+    active_system_prompt = prompt or SYSTEM_PROMPT
 
     # Build user message content
-    user_content = f"""Please analyze this job description.
+    if user_prompt:
+        user_content = user_prompt
+    else:
+        user_content = f"""Please analyze this job description.
 Metadata:
 - Job Title: {job_title or 'Unknown / Not provided'}
 - Company: {company_name or 'Unknown / Not provided'}
@@ -113,7 +128,7 @@ Job Description:
         payload = {
             "model": settings.llm_model or "gpt-4o-mini",
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": active_system_prompt},
                 {"role": "user", "content": user_content}
             ],
             "response_format": {"type": "json_object"},
@@ -150,7 +165,7 @@ Job Description:
 
     payload = {
         "system_instruction": {
-            "parts": [{"text": SYSTEM_PROMPT}]
+            "parts": [{"text": active_system_prompt}]
         },
         "contents": [
             {

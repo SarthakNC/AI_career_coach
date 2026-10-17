@@ -49,6 +49,38 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
 
 
+def get_current_github_token() -> Optional[str]:
+    """
+    Returns the configured GITHUB_TOKEN. Checks environment variables first,
+    then parses backend/.env directly on the fly so token updates take effect immediately
+    without requiring a server restart.
+    """
+    import os
+    token = os.getenv("GITHUB_TOKEN")
+    if token and token.strip() and token.strip() != "your_github_token":
+        return token.strip()
+
+    if ENV_PATH.exists():
+        try:
+            for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line.startswith("GITHUB_TOKEN="):
+                    val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    if val and val != "your_github_token":
+                        return val
+        except Exception:
+            pass
+
+    try:
+        settings = get_settings()
+        if settings.github_token and settings.github_token.strip() != "your_github_token":
+            return settings.github_token.strip()
+    except Exception:
+        pass
+
+    return None
+
+
 @lru_cache()
 def get_settings() -> Settings:
     """Return cached application settings singleton."""
