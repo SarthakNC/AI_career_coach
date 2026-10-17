@@ -180,9 +180,147 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
+## PDF Job Description Extraction & OCR Architecture
+
+CareerProof AI supports direct PDF job description ingestion for both digital vector PDFs and scanned/rasterized documents.
+
+```
+[Uploaded PDF]
+      │
+      ▼
+[validate_pdf] ──> Check Magic Bytes (%PDF-), File Size (<= 10MB), Page Bounds (<= 30), Encryption
+      │
+      ▼
+[detect_scanned_pages]
+      ├── Page has >= 80 chars digital text ──> [Direct PyMuPDF Text Extraction]
+      │                                                                  │
+      └── Page has < 80 chars (Scanned)     ──> [200 DPI Grayscale Render]
+                                                                         │
+                                                                         ▼
+                                                       [Tesseract OCR Engine]
+                                                                         │
+                                                                         ▼
+[normalize_extracted_text] ──> De-hyphenate, bullet points, clean whitespace, page ordering
+      │
+      ▼
+[Editable Frontend Preview] ──> User inspects, edits & confirms extracted job text
+      │
+      ▼
+[POST /api/v1/jobs/analyze-extracted-text] ──> LLM Skill Extraction ──> ChromaDB RAG Assessment
+```
+
+### Key Technical Highlights
+
+1. **Selective Hybrid Processing**:
+   - Only pages lacking selectable text undergo rasterization and OCR. Digital pages extract instantly with zero OCR overhead.
+   - Preserves reading flow across multi-page and mixed documents.
+2. **Pure Python/C Rendering**:
+   - Uses PyMuPDF's built-in `page.get_pixmap(dpi=200)` to render scanned pages to memory buffers, eliminating external Poppler/PDF2Image dependencies.
+3. **Editable Human-in-the-Loop Preview**:
+   - The user reviews, formats, and approves the extracted text before any LLM token usage or database persistence.
+4. **Resilient Error Handling**:
+   - Rejects encrypted/password-protected PDFs, oversized files (> 10MB), and files exceeding page limits (> 30 pages) with actionable HTTP 400 messages.
+   - If a scanned document requires OCR but Tesseract is not installed, the API returns HTTP 422 with clear installation instructions rather than failing silently.
+
+---
+
+## Installation & OCR Setup
+
+### 1. Python Dependencies
+In `backend/`:
+```bash
+cd backend
+.\venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+Key packages: `pymupdf>=1.24.0`, `pytesseract>=0.3.10`, `pillow>=10.0.0`, `python-multipart>=0.0.12`.
+
+### 2. Tesseract OCR Engine Installation
+
+#### Windows Setup:
+1. Download the official Windows installer from: https://github.com/UB-Mannheim/tesseract/wiki
+2. Install to the default directory: `C:\Program Files\Tesseract-OCR`
+3. The backend automatically detects Tesseract at this path or on your system `PATH`.
+4. (Optional) Explicitly configure the path in `backend/.env`:
+   ```env
+   OCR_TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
+   ```
+
+#### Linux / Ubuntu / Debian Setup:
+```bash
+sudo apt-get update
+sudo apt-get install -y tesseract-ocr tesseract-ocr-eng
+```
+
+#### macOS Setup:
+```bash
+brew install tesseract
+```
+
+---
+
+## Environment Configuration
+
+Configure the following variables in `backend/.env`:
+
+| Variable | Default | Purpose |
+| :--- | :--- | :--- |
+| `PDF_MAX_UPLOAD_SIZE_MB` | `10` | Maximum allowed upload size in megabytes |
+| `PDF_MAX_PAGE_COUNT` | `30` | Maximum pages allowed per PDF document |
+| `OCR_LANGUAGE` | `eng` | Tesseract language model (e.g. `eng`) |
+| `OCR_TESSERACT_CMD` | `None` | Custom path to `tesseract` binary if not in PATH |
+| `OCR_TIMEOUT_SECONDS` | `30` | Timeout in seconds per page OCR execution |
+| `PDF_MIN_PAGE_TEXT_CHARS` | `80` | Min character threshold before triggering OCR |
+
+---
+
+## PDF Extraction API Endpoints
+
+### 1. Extract Text from PDF
+**`POST /api/v1/jobs/extract-pdf`** (Multipart Form Data)
+- **Headers**: `Authorization: Bearer <supabase_token>`
+- **Body**: `file: <binary_pdf>`
+
+**Example Response**:
+```json
+{
+  "success": true,
+  "extracted_text": "Senior Backend Engineer\nResponsibilities:\n- Design scalable APIs with FastAPI\n- PostgreSQL and Redis caching",
+  "page_count": 2,
+  "extraction_method": "mixed",
+  "ocr_pages": [2],
+  "warnings": [],
+  "detected_job_title": "Senior Backend Engineer",
+  "detected_company_name": null
+}
+```
+
+### 2. Analyze Confirmed Extracted Text
+**`POST /api/v1/jobs/analyze-extracted-text`** (JSON)
+- **Headers**: `Authorization: Bearer <supabase_token>`, `Content-Type: application/json`
+- **Body**:
+```json
+{
+  "extracted_text": "Confirmed job description text with minimum 50 characters...",
+  "job_title": "Senior Backend Engineer",
+  "company_name": "Stripe"
+}
+```
+- **Response**: Standard `JobResponse` object with extracted requirements persisted in Supabase.
+
+---
+
+## Known Limitations & Best Practices
+
+1. **Multi-Column Reading Orders**: Standard multi-column layout flows may interleave paragraphs if margins are tight. The editable preview allows users to adjust paragraph order before analysis.
+2. **Complex Embedded Tables**: Data in borderless multi-row tables may extract line-by-line rather than in column pairs. Users can review the extracted text preview.
+3. **Extremely Low-Resolution Scans**: Scanned images below 100 DPI or heavily rotated pages may produce degraded OCR character accuracy. The system returns quality warnings when OCR character counts are low.
+4. **Password-Protected Documents**: Protected or encrypted PDFs are rejected; users must upload unlocked documents.
+
+---
+
 ## Running Automated Tests
 
-The test suite includes **57 automated tests** covering SSRF safety, URL validation, tree filtering, secret sanitization, duplicate normalization, LLM parsing, unauthenticated access, skill normalization, deterministic scoring, gap prioritization, assessment persistence, commit diffing, idempotency keys, evidence reconciliation, and reassessment versioning:
+The test suite includes **82 automated tests** covering SSRF safety, URL validation, tree filtering, secret sanitization, duplicate normalization, LLM parsing, unauthenticated access, skill normalization, deterministic scoring, gap prioritization, assessment persistence, commit diffing, idempotency keys, evidence reconciliation, reassessment versioning, ChromaDB RAG vector indexing, and PDF text extraction/OCR:
 
 ```bash
 cd backend
@@ -191,27 +329,21 @@ cd backend
 
 ---
 
-## Judge-Ready Live Demo Checklist (Phase 8)
+## Judge-Ready Live Demo Checklist (Phase 8 & 9)
 
 1. **Sign In & Setup**:
    - Log into CareerProof AI at `http://localhost:5173`.
-   - Ensure you have a target job analyzed (e.g. "Full Stack Engineer") and a GitHub repository connected and analyzed.
-2. **Initial Assessment (v1)**:
-   - Go to **Skill Gaps** in the sidebar. Run an assessment for your job and connected repository.
-   - Note the baseline **Portfolio Evidence Match Score** (e.g. 60.0%) and the requirement results.
-3. **Open Repository Activity**:
-   - Click **Repository Activity** in the sidebar (or navigate to `/dashboard/activity`).
-   - Observe the **Monitored Repositories & Polling Status** card displaying your repository, default branch, last analyzed commit SHA, and continuous monitoring status.
-4. **Push New Code to GitHub (or Trigger Sync)**:
-   - Push a real commit to your repository containing added code files (e.g. adding new endpoints or tests) or click **Check Changes** to sync immediately.
-   - The system detects the new commit SHA, retrieves the changed files diff, and reconciles the skill evidence pool.
-5. **Review Detected Change Event**:
-   - Observe the newly recorded event in the **Detected Change Events & Assessment History** list.
-   - Click **View Details**:
-     - Inspect the commit SHA, author, and commit message.
-     - Review changed files with additions/deletions and expandable code patch diffs.
-     - Review the **Reconciled Skills** chips and the updated score delta (e.g. `+15.0%`).
-6. **Inspect Assessment Version Lineage (v2)**:
-   - Click **View Assessment** or go to **Skill Gaps**.
-   - Notice the assessment is now labeled **Version Lineage (v2)** with the updated score.
-   - Click **Version Lineage**: observe the timeline modal showing `v1 (60%)` &rarr; `v2 (75%) (+15%)`, including the trigger commit SHA and timestamp.
+   - Navigate to **Job Analysis**.
+2. **PDF Job Description Ingestion**:
+   - Toggle to **Upload PDF (Digital & OCR)**.
+   - Drag and drop or browse to select a job description PDF (digital or scanned).
+   - Click **Extract Text from PDF**. Observe the page count, extraction method badge (`Digital Text`, `Full OCR`, or `Hybrid`), and editable text preview.
+   - Make any desired edits in the preview textarea and click **Confirm and Analyze Job Description**.
+3. **Structured Skill Extraction**:
+   - View the extracted technical requirements categorized into Programming Languages, Frameworks, Deployment, Databases, and Core concepts.
+4. **ChromaDB RAG Assessment**:
+   - Go to **Skill Gaps** and select your analyzed job and GitHub repository.
+   - Run the assessment: the RAG vector engine retrieves semantic code chunks from ChromaDB, audits evidence, and displays line-verified code excerpts with match scores.
+5. **Continuous Commit Monitoring**:
+   - Push a commit to your repository or click **Check Changes** in **Repository Activity** to see automated evidence reconciliation and version lineage (`v1` &rarr; `v2`).
+

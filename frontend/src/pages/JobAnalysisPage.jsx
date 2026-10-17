@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { analyzeJob, listSavedJobs, getJobDetails, deleteSavedJob } from '../services/api'
+import { analyzeJob, analyzeExtractedText, listSavedJobs, getJobDetails, deleteSavedJob } from '../services/api'
 import JobAnalysisForm from '../components/JobAnalysisForm'
 import RequirementList from '../components/RequirementList'
 import JobHistory from '../components/JobHistory'
@@ -91,7 +91,13 @@ export default function JobAnalysisPage() {
       await new Promise((r) => setTimeout(r, 400))
 
       setStage(STAGES.ANALYZING)
-      const result = await analyzeJob(formData, token)
+      const result = formData.source_type === 'pdf_upload'
+        ? await analyzeExtractedText({
+            extracted_text: formData.pasted_description,
+            job_title: formData.job_title,
+            company_name: formData.company_name,
+          }, token)
+        : await analyzeJob(formData, token)
 
       setStage(STAGES.SAVING)
       await new Promise((r) => setTimeout(r, 300))

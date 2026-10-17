@@ -24,7 +24,7 @@ class PDFValidationError(HTTPException):
 class OCREngineUnavailableError(HTTPException):
     """Raised when OCR is strictly required to extract text but Tesseract is not configured."""
     def __init__(self, detail: str = "Tesseract OCR engine is not available on this server to process scanned PDF pages."):
-        super().__init__(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail)
+        super().__init__(status_code=422, detail=detail)
 
 
 def get_tesseract_command_path() -> Optional[str]:
