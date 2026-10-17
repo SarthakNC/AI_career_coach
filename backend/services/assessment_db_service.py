@@ -122,6 +122,17 @@ def create_assessment_record(
         "completed_at": completed_time,
     }
 
+    if "version" in assessment_data:
+        assessment_payload["version"] = assessment_data["version"]
+    if assessment_data.get("parent_assessment_id"):
+        assessment_payload["parent_assessment_id"] = str(assessment_data["parent_assessment_id"])
+    if assessment_data.get("trigger_event_id"):
+        assessment_payload["trigger_event_id"] = str(assessment_data["trigger_event_id"])
+    if "trigger_commit_sha" in assessment_data:
+        assessment_payload["trigger_commit_sha"] = assessment_data["trigger_commit_sha"]
+    if "score_delta" in assessment_data:
+        assessment_payload["score_delta"] = assessment_data["score_delta"]
+
     try:
         with httpx.Client(timeout=15.0) as client:
             # 1. Insert assessment

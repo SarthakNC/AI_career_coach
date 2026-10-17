@@ -8,27 +8,18 @@ const pageMeta = {
   '/dashboard/jobs': {
     title: 'Job Analysis',
     description: 'Parse real job postings to extract technical requirements, seniority expectations, and framework demands.',
-    phase: 'Phase 5',
   },
   '/dashboard/github': {
     title: 'GitHub Portfolio',
     description: 'Connect your GitHub profile so the platform can inspect repositories, commit patterns, test coverage, and code quality.',
-    phase: 'Phase 5',
   },
   '/dashboard/skills': {
     title: 'Skill Gaps',
     description: 'Evidence-based skill-gap assessment comparing your proven repository evidence against employer requirements.',
-    phase: 'Phase 5',
-  },
-  '/dashboard/history': {
-    title: 'Assessment History',
-    description: 'View past assessments and track how your skill profile evolves as you push code updates.',
-    phase: 'Phase 5',
   },
   '/dashboard/settings': {
     title: 'Settings',
     description: 'Account preferences, notification settings, and connected service configuration.',
-    phase: 'Phase 5',
   },
 }
 
@@ -52,7 +43,7 @@ export default function ComingSoonPage() {
       </p>
 
       <span className="text-[11px] uppercase font-semibold px-3 py-1 rounded-full bg-[#333131] text-[#b0abab] border border-[#484545] tracking-wider">
-        Planned for {meta.phase}
+        In Active Development
       </span>
     </div>
   )

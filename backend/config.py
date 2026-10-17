@@ -29,8 +29,11 @@ class Settings(BaseSettings):
     llm_model: str = Field(default="gemini-flash-lite-latest", alias="LLM_MODEL")
     llm_base_url: Optional[str] = Field(default=None, alias="LLM_BASE_URL")
 
-    # GitHub Integration
+    # GitHub Integration & Phase 8 Automatic Monitoring
     github_token: Optional[str] = Field(default=None, alias="GITHUB_TOKEN")
+    github_monitoring_enabled: bool = Field(default=True, alias="GITHUB_MONITORING_ENABLED")
+    github_poll_interval_seconds: int = Field(default=60, alias="GITHUB_POLL_INTERVAL_SECONDS")
+    github_max_files_per_commit: int = Field(default=50, alias="GITHUB_MAX_FILES_PER_COMMIT")
 
     # CORS configuration
     allowed_origins: str = Field(default="http://localhost:5173", alias="ALLOWED_ORIGINS")

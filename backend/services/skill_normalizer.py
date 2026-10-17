@@ -131,6 +131,22 @@ CANONICAL_ALIASES: Dict[str, str] = {
     "git": "Git",
     "github": "Git",
     "version control": "Git",
+
+    # Core Engineering Disciplines & Concepts
+    "software engineering": "Software Engineering",
+    "software development": "Software Engineering",
+    "software developer": "Software Engineering",
+    "software engineer": "Software Engineering",
+    "swe": "Software Engineering",
+    "sde": "Software Engineering",
+    "programming": "Software Engineering",
+    "computer science": "Software Engineering",
+    "web development": "Web Development",
+    "full stack": "Full Stack Development",
+    "full stack development": "Full Stack Development",
+    "full-stack development": "Full Stack Development",
+    "backend development": "Backend Development",
+    "frontend development": "Frontend Development",
 }
 
 

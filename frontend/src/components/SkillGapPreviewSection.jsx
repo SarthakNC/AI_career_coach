@@ -4,7 +4,7 @@ export default function SkillGapPreviewSection() {
   const previewModules = [
     {
       title: 'GitHub Portfolio Evidence Harvester',
-      phase: 'Phase 2',
+      badge: 'Core Service',
       icon: GitBranch,
       description:
         'Connects to GitHub API to inspect public repositories, commit cadence, test suites, architecture decisions, and code complexity metrics.',
@@ -16,7 +16,7 @@ export default function SkillGapPreviewSection() {
     },
     {
       title: 'Target Job Description Parser',
-      phase: 'Phase 2',
+      badge: 'Core Service',
       icon: BookOpen,
       description:
         'Extracts structured technical competencies, required seniorities, and framework expectations from raw job postings using targeted LLM prompts.',
@@ -28,7 +28,7 @@ export default function SkillGapPreviewSection() {
     },
     {
       title: 'Evidence-Based Skill Gap Engine',
-      phase: 'Phase 3',
+      badge: 'Assessment Engine',
       icon: BarChart3,
       description:
         'Calculates objective delta between candidate proven repository evidence and employer requirements. No simulated scores or fabricated metrics.',
@@ -40,7 +40,7 @@ export default function SkillGapPreviewSection() {
     },
     {
       title: 'Actionable Engineering Career Roadmap',
-      phase: 'Phase 3',
+      badge: 'Assessment Engine',
       icon: Terminal,
       description:
         'Generates concrete repo enhancements, architectural exercises, and project ideas specifically designed to produce missing portfolio evidence.',
@@ -61,17 +61,17 @@ export default function SkillGapPreviewSection() {
               Skill-Gap Analysis Engine
             </h2>
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#333131] text-[#b8b3b3] border border-[#484545]">
-              Future Phase Roadmap
+              AI Capability Overview
             </span>
           </div>
           <p className="text-xs text-[#9c9797] mt-1">
-            Modular architecture designed for Phase 2 & 3 implementation. Real calculations will replace placeholders once pipeline is activated.
+            Engine architecture designed for transparent evidence verification, comparing real repository artifacts with employer requirements.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 text-xs text-[#FF8900] bg-[#FF8900]/10 px-3 py-1.5 rounded-lg border border-[#FF8900]/20 font-medium">
+        <div className="flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 font-medium">
           <Lock className="w-3.5 h-3.5" />
-          <span>Locked for Phase 1 Foundation</span>
+          <span>Active & Integrated</span>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export default function SkillGapPreviewSection() {
                       {module.title}
                     </h3>
                     <span className="text-[10px] font-mono text-[#a19c9c]">
-                      {module.phase} Pipeline
+                      {module.badge}
                     </span>
                   </div>
                 </div>
