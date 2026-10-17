@@ -56,20 +56,24 @@ export default function SkillGapAssessmentPage() {
     try {
       setLoadingOptions(true)
       setErrorMessage('')
-      const [optData, histData] = await Promise.all([
-        getAssessmentOptions(token),
-        listAssessments(token),
-      ])
-      setOptions(optData || { jobs: [], repositories: [] })
-      setHistoryList(histData || [])
 
-      // If user has previous assessments and none is active, show the latest one if desired, or stay on 'new'
-      if (histData && histData.length > 0 && !activeAssessment) {
-        // Keep on 'new' so user can start immediately, but history badge is updated
+      // 1. Load options (jobs and repositories)
+      try {
+        const optData = await getAssessmentOptions(token)
+        setOptions(optData || { jobs: [], repositories: [] })
+      } catch (optErr) {
+        console.error('Failed to load assessment options:', optErr)
+        setErrorMessage(optErr.message || 'Failed to load jobs or repositories.')
       }
-    } catch (err) {
-      console.error('Failed to load assessment options or history:', err)
-      setErrorMessage(err.message || 'Failed to load assessment options.')
+
+      // 2. Load history independently so any missing assessment table never blocks setup
+      try {
+        const histData = await listAssessments(token)
+        setHistoryList(histData || [])
+      } catch (histErr) {
+        console.warn('Could not load assessment history:', histErr)
+        setHistoryList([])
+      }
     } finally {
       setLoadingOptions(false)
     }

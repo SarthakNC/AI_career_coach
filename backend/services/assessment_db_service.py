@@ -127,6 +127,15 @@ def create_assessment_record(
             # 1. Insert assessment
             res_as = client.post(f"{base_url}/assessments", json=assessment_payload, headers=headers)
             if res_as.status_code not in (200, 201):
+                if "PGRST205" in res_as.text or "schema cache" in res_as.text:
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=(
+                            "Database table 'public.assessments' does not exist in your Supabase schema yet. "
+                            "Please run the migration script 'backend/migrations/phase7_skill_gap_analyzer.sql' "
+                            "in your Supabase SQL Editor to create the assessment tables."
+                        )
+                    )
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to save assessment record: {res_as.text}"
@@ -223,6 +232,9 @@ def list_user_assessments(user_id: UUID, token: str) -> List[Dict[str, Any]]:
         with httpx.Client(timeout=10.0) as client:
             res = client.get(url, headers=headers)
             if res.status_code != 200:
+                # If table does not exist yet in schema cache, return empty list gracefully
+                if "PGRST205" in res.text or "schema cache" in res.text or res.status_code == 404:
+                    return []
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to fetch assessments: {res.text}"
@@ -251,6 +263,11 @@ def get_assessment_by_id(assessment_id: UUID, user_id: UUID, token: str) -> Dict
         with httpx.Client(timeout=10.0) as client:
             res = client.get(as_url, headers=headers)
             if res.status_code != 200:
+                if "PGRST205" in res.text or "schema cache" in res.text or res.status_code == 404:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Assessment table not found in database or assessment does not exist."
+                    )
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to fetch assessment: {res.text}"
